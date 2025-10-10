@@ -144,20 +144,20 @@ const Header = () => {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-lg overflow-hidden z-50 animate-fadeIn">
-                  <Link
+                  <p
                     to="/profile"
                     className="block px-4 py-2 hover:bg-indigo-50 transition"
                     onClick={() => setDropdownOpen(false)}
                   >
                     Profile
-                  </Link>
-                  <Link
+                  </p>
+                  <p
                     to="/settings"
                     className="block px-4 py-2 hover:bg-indigo-50 transition"
                     onClick={() => setDropdownOpen(false)}
                   >
                     Settings
-                  </Link>
+                  </p>
                   <button
                     onClick={() => {
                       logout();

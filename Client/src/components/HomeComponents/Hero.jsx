@@ -1,8 +1,11 @@
 import React from "react";
 import Lottie from "lottie-react";
 import memoryFlowAnimation from "../../assets/memoryFlow.json"; // Lottie JSON animation
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+    const goToPage = () => { navigate('/memorylane') };
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white py-28 px-6">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-12 relative z-20">
@@ -21,10 +24,10 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <button className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transform transition-all duration-300">
+            <button  className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transform transition-all duration-300">
               Start Capturing Memories
             </button>
-            <button className="border border-indigo-500 text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition transform hover:scale-105">
+            <button type="button" onClick={goToPage} className="border border-indigo-500 text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition transform hover:scale-105">
               Explore Timeline
             </button>
           </div>
