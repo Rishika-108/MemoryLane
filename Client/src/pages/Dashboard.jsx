@@ -63,6 +63,9 @@ const Dashboard = () => {
         )}
       </motion.div>
 
+      <RecentlyViewed recentlyViewed={recentlyViewed} />
+      
+
       {/* Analytics Section */}
       <motion.section
         initial={{ opacity: 0 }}

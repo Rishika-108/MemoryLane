@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Memory Lane</title>
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    width: 340px;
+    padding: 16px;
+    background: #f9fafb;
+    color: #1f2937;
+  }
+
+  h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    text-align: center;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    padding: 10px 12px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    transform: scale(1.2);
+    accent-color: #2563eb; /* blue checkmark */
+  }
+
+  button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  button:hover {
+    background: #1d4ed8;
+  }
+
+  h4 {
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 4px;
+  }
+
+  ul {
+    margin: 8px 0 0 0;
+    padding: 0;
+    list-style: none;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  ul li {
+    background: #fff;
+    margin-bottom: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  ul li:hover {
+    background: #f3f4f6;
+  }
+</style>
+</head>
+<body>
+  <h3>📒 Memory Lane</h3>
+
+  <div>
+    <label>
+      <input id="toggle" type="checkbox" />
+      Enable auto-capture
+    </label>
+  </div>
+
+  <div style="margin-top:12px">
+    <button id="force">⚡ Force capture current tab</button>
+  </div>
+
+  <h4>Recent (local)</h4>
+  <ul id="recent"></ul>
+
+  <script src="popup.js"></script>
+</body>
+</html>
