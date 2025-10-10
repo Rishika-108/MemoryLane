@@ -21,6 +21,8 @@ const Header = () => {
   const [authMode, setAuthMode] = useState("login"); // 'login' or 'register'
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const location = useLocation();
+  const BASE_URL = "http://localhost:5000";
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -41,26 +43,47 @@ const Header = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleAuth = () => {
-    const { name, email, password } = formData;
+  const handleAuth = async () => {
+  const { name, email, password } = formData;
 
-    if (authMode === "register") {
-      if (!name || !email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
-      login({ id: "user_" + Date.now(), name, email });
-    } else {
-      if (!email || !password) {
-        alert("Please enter email and password");
-        return;
-      }
-      login({ id: "user_" + Date.now(), name: email.split("@")[0], email });
+  try {
+    const endpoint =
+      authMode === "register"
+        ? `${BASE_URL}/api/user/register`
+        : `${BASE_URL}/api/user/login`;
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Authentication failed");
+      return;
     }
+
+    // Save token locally (optional)
+    localStorage.setItem("token", data.token);
+
+    // Update context
+    login({
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      isLoggedIn: true,
+    });
 
     setShowLoginModal(false);
     setFormData({ name: "", email: "", password: "" });
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -78,7 +101,7 @@ const Header = () => {
         {/* Logo */}
         <Link to="/" className="flex flex-col leading-tight">
           <span className="text-2xl sm:text-3xl font-extrabold tracking-wide text-gray-900 font-sans bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 animate-gradient-x">
-            Wisper<span className="text-indigo-600">Recall</span>
+            Whisper<span className="text-indigo-600">Recall</span>
           </span>
           <span className="text-xs sm:text-sm font-medium text-gray-500 tracking-wide">
             REMEMBER MORE. FORGET LESS

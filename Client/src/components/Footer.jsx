@@ -11,7 +11,7 @@ const Footer = () => {
         {/* Brand Section */}
         <div>
           <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent tracking-wide animate-gradient-x">
-            WisperRecall
+            WhisperRecall
           </h2>
           <p className="text-sm leading-relaxed text-gray-400 max-w-md">
             Capture. Reflect. Evolve.<br />
@@ -45,7 +45,7 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="relative border-t border-gray-800 py-5 text-center text-sm text-gray-500 backdrop-blur-sm bg-gray-900/50">
         © {new Date().getFullYear()}{" "}
-        <span className="font-semibold text-indigo-400">WisperRecall</span> · Built with ❤️ during Hackathon Hours.
+        <span className="font-semibold text-indigo-400">WhisperRecall</span> · Built with ❤️ during Hackathon Hours.
       </div>
     </footer>
   );
