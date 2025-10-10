@@ -93,10 +93,11 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? "shadow-xl bg-white/80 backdrop-blur-lg" : "bg-white/95"
-      }`}
-    >
+  className={`relative w-full z-50 transition-all duration-300 ${
+    scrolled ? "shadow-xl bg-white/80 backdrop-blur-lg" : "bg-white/95"
+  }`}
+>
+
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link to="/" className="flex flex-col leading-tight">

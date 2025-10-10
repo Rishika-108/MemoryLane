@@ -18,13 +18,13 @@ const MemoryGrid = ({ memories, onClick, isLoading }) => {
   };
 
   if (isLoading) {
-    // Skeleton Loader Grid
+    // Dark-themed skeleton loader grid
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {Array.from({ length: 8 }).map((_, idx) => (
           <div
             key={idx}
-            className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl animate-pulse h-48"
+            className="bg-black/50 backdrop-blur-3xl p-6 rounded-3xl animate-pulse shadow-lg h-52"
           />
         ))}
       </div>
@@ -40,7 +40,12 @@ const MemoryGrid = ({ memories, onClick, isLoading }) => {
     >
       <AnimatePresence>
         {memories.map((m) => (
-          <motion.div key={m.id} variants={cardVariants} layout>
+          <motion.div
+            key={m.id}
+            variants={cardVariants}
+            layout
+            whileHover={{ scale: 1.04 }}
+          >
             <MemoryCard memory={m} onClick={() => onClick(m.id)} />
           </motion.div>
         ))}
