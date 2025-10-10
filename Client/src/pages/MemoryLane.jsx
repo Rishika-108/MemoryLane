@@ -78,94 +78,115 @@ const MemoryLane = () => {
 
   return (
     <MemoryLaneErrorBoundary>
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white py-28 px-6">
-        <div
-          className="min-h-screen flex flex-col px-6 py-10"
-          style={{ background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)" }}
+      <div
+        className="min-h-screen flex flex-col px-6 py-10"
+        style={{
+          background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+        }}
+      >
+        {/* Search Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
         >
-          {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <SearchBar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              onSearch={fetchSearchResults}
-            />
-          </motion.div>
+          <SearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSearch={fetchSearchResults}
+          />
+        </motion.div>
 
-          {/* Recently Viewed / Empty State */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            {searchTerm.trim() === "" &&
-              (recentlyViewed?.length > 0 ? (
-                <RecentlyViewed memories={recentlyViewed} onClick={markRecentlyViewed} />
-              ) : (
-                <p className="text-center mt-8 text-gray-400 text-lg">
-                  No recent activity yet. Start creating memories to see them here!
-                </p>
-              ))}
-          </motion.div>
+        {/* Recently Viewed / Empty State */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          {searchTerm.trim() === "" &&
+            (recentlyViewed?.length > 0 ? (
+              <RecentlyViewed
+                memories={recentlyViewed}
+                onClick={markRecentlyViewed}
+              />
+            ) : (
+              <p className="text-center mt-8 text-gray-400 text-lg">
+                No recent activity yet. Start creating memories to see them
+                here!
+              </p>
+            ))}
+        </motion.div>
 
-          {/* Search Results / Skeleton / Empty */}
-          <div className="flex-1 mt-6">
-            <AnimatePresence>
-              {isLoading ? (
-                <motion.div
-                  key="skeleton"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6"
-                >
-                  {Array.from({ length: 8 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="h-48 bg-white/20 backdrop-blur-md rounded-3xl animate-pulse shadow-md"
-                    />
-                  ))}
-                </motion.div>
-              ) : error ? (
-                <motion.p
-                  key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center mt-10 text-red-500 text-lg"
-                >
-                  {error}
-                </motion.p>
-              ) : searchResults?.length > 0 ? (
-                <motion.div
-                  key="results"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} />
-                </motion.div>
-              ) : searchTerm.trim() !== "" ? (
-                <motion.p
-                  key="no-results"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center mt-10 text-gray-500 text-lg"
-                >
-                  No memories found for{" "}
-                  <span className="text-indigo-500">"{searchTerm}"</span>
-                </motion.p>
-              ) : null}
-            </AnimatePresence>
-          </div>
+        {/* Search Results / Skeleton / Empty */}
+        <div className="flex-1 mt-6">
+          <AnimatePresence>
+            {isLoading ? (
+              <motion.div
+                key="skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6"
+              >
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="h-48 bg-white/20 backdrop-blur-md rounded-3xl animate-pulse shadow-md"
+                  />
+                ))}
+              </motion.div>
+            ) : error ? (
+              <motion.p
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center mt-10 text-red-500 text-lg"
+              >
+                {error}
+              </motion.p>
+            ) : searchResults?.length > 0 ? (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <MemoryGrid
+                  memories={searchResults}
+                  onClick={markRecentlyViewed}
+                />
+              </motion.div>
+            ) : searchTerm.trim() !== "" ? (
+              <motion.p
+                key="no-results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center mt-10 text-gray-500 text-lg"
+              >
+                No memories found for{" "}
+                <span className="text-indigo-500">"{searchTerm}"</span>
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
         </div>
-      </section>
+      </div>
+
+      {/* Background Floating Nodes */}
+      {Array.from({ length: 10 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="absolute w-4 h-4 bg-indigo-400/30 rounded-full animate-float-slower"
+          style={{
+            top: `${Math.random() * 80}%`,
+            left: `${Math.random() * 90}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            zIndex: 0, // ensures nodes stay behind main content
+          }}
+        />
+      ))}
     </MemoryLaneErrorBoundary>
   );
 };

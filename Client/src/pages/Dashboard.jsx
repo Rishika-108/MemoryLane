@@ -6,13 +6,13 @@ import MoodAnalytics from "../components/DashboardComponents/MoodAnalytics";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
-  const { 
-    analyticsData, 
-    recentlyViewed, 
-    memories, 
-    computeAnalytics, 
-    markRecentlyViewed, 
-    isLoading 
+  const {
+    analyticsData,
+    recentlyViewed,
+    memories,
+    computeAnalytics,
+    markRecentlyViewed,
+    isLoading,
   } = useAppContext();
 
   // Recompute analytics whenever memories change
@@ -35,14 +35,16 @@ const Dashboard = () => {
   const RecentlyViewedSkeleton = () => (
     <div className="flex flex-wrap gap-6">
       {Array.from({ length: 4 }).map((_, idx) => (
-        <div key={idx} className="w-48 h-40 bg-gray-200/20 animate-pulse rounded-2xl"></div>
+        <div
+          key={idx}
+          className="w-48 h-40 bg-gray-200/20 animate-pulse rounded-2xl"
+        ></div>
       ))}
     </div>
   );
 
   return (
     <div className="container mx-auto px-6 py-10 space-y-12 min-h-screen">
-
       {/* Recently Viewed Memories */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -55,16 +57,19 @@ const Dashboard = () => {
         {isLoading ? (
           <RecentlyViewedSkeleton />
         ) : recentlyViewed?.length > 0 ? (
-          <RecentlyViewed recentlyViewed={recentlyViewed} onClick={markRecentlyViewed} />
+          <RecentlyViewed
+            recentlyViewed={recentlyViewed}
+            onClick={markRecentlyViewed}
+          />
         ) : (
           <p className="text-gray-500 text-lg">
-            You haven’t viewed any memories yet. Start capturing to see them here!
+            You haven’t viewed any memories yet. Start capturing to see them
+            here!
           </p>
         )}
       </motion.div>
 
       <RecentlyViewed recentlyViewed={recentlyViewed} />
-      
 
       {/* Analytics Section */}
       <motion.section
@@ -84,6 +89,19 @@ const Dashboard = () => {
           </div>
         )}
       </motion.section>
+      {/* Background Floating Nodes */}
+      {Array.from({ length: 10 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="absolute w-4 h-4 bg-indigo-400/30 rounded-full animate-float-slower"
+          style={{
+            top: `${Math.random() * 80}%`,
+            left: `${Math.random() * 90}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            zIndex: 0, // ensures nodes stay behind main content
+          }}
+        />
+      ))}
     </div>
   );
 };

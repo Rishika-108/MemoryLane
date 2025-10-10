@@ -12,6 +12,8 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import ThoughtProcess from "../assets/ThoughtProcess.svg";
 
+
+
 const Header = () => {
   const { user, login, logout } = useAppContext();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
