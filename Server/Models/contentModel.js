@@ -16,7 +16,9 @@ const capturedContentSchema = new mongoose.Schema({
   type: { type: String, enum: ["article", "video"],  default: "article"  },
   timestamp: { type: Date, default: Date.now},
   status: { type: String, enum: ["raw", "processing", "processed", "error"], default: "raw"},
-  aiData: { type: aiDataSchema, default: () => ({}) }
+  aiData: { type: aiDataSchema, default: () => ({}) },
+  screenshot: { type: String, default: "" },
+  reason: { type: String, default: "" }
 }, { timestamps: true });
 
 // Optional: add text index for search

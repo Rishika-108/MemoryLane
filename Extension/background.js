@@ -1,5 +1,5 @@
 // background service worker: receives light capture events, optionally takes screenshot and forwards to backend
-const BACKEND_URL = 'http://localhost:4000/api/capture'; // change to your server
+const BACKEND_URL = 'http://localhost:5000/api/capture'; // change to your server
 
 
 // throttle / debounce captures per tab to avoid spam
