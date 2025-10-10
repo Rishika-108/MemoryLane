@@ -51,7 +51,7 @@ const Header = () => {
         {/* Logo */}
         <Link to="/" className="flex flex-col leading-tight">
           <span className="text-2xl sm:text-3xl font-extrabold tracking-wide text-gray-900 font-sans bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 animate-gradient-x">
-            Wisper<span className="text-indigo-600">Recall</span>
+            Whisper<span className="text-indigo-600">Recall</span>
           </span>
           <span className="text-xs sm:text-sm font-medium text-gray-500 tracking-wide">
             REMEMBER MORE. FORGET LESS
