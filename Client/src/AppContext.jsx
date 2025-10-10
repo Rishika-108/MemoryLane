@@ -69,7 +69,6 @@ export const AppProvider = ({ children }) => {
     setIsLoading(true);
     setTimeout(() => {
       setMemories(mockMemories);
-      computeAnalytics();
       setIsLoading(false);
     }, 1000);
   }, []);
