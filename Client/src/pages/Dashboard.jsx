@@ -16,9 +16,9 @@ const Dashboard = () => {
   } = useAppContext();
 
   // Recompute analytics whenever memories change
-  useEffect(() => {
-    computeAnalytics();
-  }, [memories, computeAnalytics]);
+  // useEffect(() => {
+  //   computeAnalytics();
+  // }, [memories, computeAnalytics]);
 
   // Memoize analytics to avoid unnecessary re-renders
   const memoizedAnalytics = useMemo(() => analyticsData || {}, [analyticsData]);

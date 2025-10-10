@@ -68,6 +68,8 @@ const Header = () => {
     // Save token locally (optional)
     localStorage.setItem("token", data.token);
 
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("isAuthenticated", "true");
     // Update context
     login({
       id: data.user.id,
@@ -76,8 +78,10 @@ const Header = () => {
       isLoggedIn: true,
     });
 
+
     setShowLoginModal(false);
     setFormData({ name: "", email: "", password: "" });
+    
   } catch (error) {
     console.error(error);
     alert("Something went wrong. Please try again.");
@@ -144,23 +148,11 @@ const Header = () => {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-lg overflow-hidden z-50 animate-fadeIn">
-                  <p
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-indigo-50 transition"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Profile
-                  </p>
-                  <p
-                    to="/settings"
-                    className="block px-4 py-2 hover:bg-indigo-50 transition"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Settings
-                  </p>
                   <button
                     onClick={() => {
                       logout();
+                      localStorage.removeItem("isAuthenticated");
+                      localStorage.removeItem("token");
                       setDropdownOpen(false);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-indigo-50 transition"
