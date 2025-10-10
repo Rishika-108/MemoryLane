@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppContext } from "../AppContext";
 import {
   FiUser,
@@ -18,8 +18,9 @@ const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [authMode, setAuthMode] = useState("login"); // 'login' or 'register'
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const location = useLocation();
-  const usernameRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -27,12 +28,38 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogin = () => {
-    const name = usernameRef.current.value.trim();
-    if (!name) return;
-    login({ id: "user_" + Date.now(), name });
+  useEffect(() => {
+    // lock scroll when modal is open
+    if (showLoginModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showLoginModal]);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleAuth = () => {
+    const { name, email, password } = formData;
+
+    if (authMode === "register") {
+      if (!name || !email || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+      login({ id: "user_" + Date.now(), name, email });
+    } else {
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
+      login({ id: "user_" + Date.now(), name: email.split("@")[0], email });
+    }
+
     setShowLoginModal(false);
-    usernameRef.current.value = "";
+    setFormData({ name: "", email: "", password: "" });
   };
 
   const navLinks = [
@@ -160,11 +187,10 @@ const Header = () => {
         </nav>
       )}
 
-      {/* Login Modal */}
+      {/* Login / Register Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-96 shadow-2xl relative animate-fadeInUp">
-            
             {/* Close Button */}
             <button
               onClick={() => setShowLoginModal(false)}
@@ -182,39 +208,86 @@ const Header = () => {
 
             {/* Modal Title */}
             <h2 className="text-2xl font-bold mb-2 text-white text-center tracking-wide">
-              Welcome Back!
+              {authMode === "login" ? "Welcome Back!" : "Create Account"}
             </h2>
-            <p className="text-sm text-gray-200 mb-6 text-center">
-              Log in or register to save your memories and insights
+            <p className="text-sm text-gray-200 mb-4 text-center">
+              {authMode === "login"
+                ? "Log in to access your memories"
+                : "Register to start your journey"}
             </p>
 
-            {/* Username Input */}
+            {/* Auth Mode Toggle */}
+            <div className="flex justify-center gap-4 mb-4">
+              <button
+                onClick={() => setAuthMode("login")}
+                className={`px-3 py-1 rounded-lg transition ${
+                  authMode === "login"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white/10 text-gray-300 hover:bg-white/20"
+                }`}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setAuthMode("register")}
+                className={`px-3 py-1 rounded-lg transition ${
+                  authMode === "register"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white/10 text-gray-300 hover:bg-white/20"
+                }`}
+              >
+                Register
+              </button>
+            </div>
+
+            {/* Form Fields */}
+            {authMode === "register" && (
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                type="text"
+                placeholder="Full Name"
+                className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+              />
+            )}
             <input
-              ref={usernameRef}
-              autoFocus
-              type="text"
-              placeholder="Enter your name"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              type="email"
+              placeholder="Email"
+              className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+            />
+            <input
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              type="password"
+              placeholder="Password"
               className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
             />
 
-            {/* Login Button */}
+            {/* Auth Button */}
             <button
-              onClick={handleLogin}
+              onClick={handleAuth}
               className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-all transform hover:scale-105"
             >
-              Login / Register
+              {authMode === "login" ? "Login" : "Register"}
             </button>
 
             {/* Social Login */}
             <div className="mt-6 flex justify-center gap-4">
-              {[
-                { Icon: FiGithub, color: "text-gray-200" },
-                { Icon: FiLinkedin, color: "text-blue-500" },
-                { Icon: FiTwitter, color: "text-blue-400" },
-              ].map(({ Icon, color }, idx) => (
+              {[FiGithub, FiLinkedin, FiTwitter].map((Icon, idx) => (
                 <button
                   key={idx}
-                  className={`p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-indigo-500/20 transition transform hover:scale-110 ${color}`}
+                  className={`p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-indigo-500/20 transition transform hover:scale-110 ${
+                    idx === 1
+                      ? "text-blue-500"
+                      : idx === 2
+                      ? "text-blue-400"
+                      : "text-gray-200"
+                  }`}
                 >
                   <Icon size={22} />
                 </button>
