@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const aiDataSchema = new mongoose.Schema({
   summary: { type: String, default: "" },
   sentiment: { type: String, default: ""},
+  emotion: { type: String, default: "" },  
   tags: [{ type: String }],
   keywords: [{ type: String }],
   category: { type: String, default: "" }

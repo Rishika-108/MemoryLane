@@ -123,6 +123,7 @@ Content:
     content.aiData = {
       summary: aiResult.summary || "",
       sentiment: aiResult.sentiment || "",
+       emotion: aiResult.emotion || "",
       tags: aiResult.tags || [],
       keywords: aiResult.tags || [], // reuse tags as keywords if not provided
       category: aiResult.category || "",
