@@ -259,40 +259,69 @@ const Header = () => {
             </div>
 
             {/* Form Fields */}
-            {authMode === "register" && (
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                type="text"
-                placeholder="Full Name"
-                className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-              />
-            )}
-            <input
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              type="email"
-              placeholder="Email"
-              className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-            />
-            <input
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Password"
-              className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-            />
+            <form
+  onSubmit={(e) => {
+    e.preventDefault(); // prevents page reload
+    handleAuth();        // same authentication logic
+  }}
+>
+  {authMode === "register" && (
+    <input
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      type="text"
+      placeholder="Full Name"
+      className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("email").focus(); // move to email
+        }
+      }}
+    />
+  )}
 
-            {/* Auth Button */}
-            <button
-              onClick={handleAuth}
-              className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-all transform hover:scale-105"
-            >
-              {authMode === "login" ? "Login" : "Register"}
-            </button>
+  <input
+    id="email"
+    name="email"
+    value={formData.email}
+    onChange={handleChange}
+    type="email"
+    placeholder="Email"
+    className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("password").focus(); // move to password
+      }
+    }}
+  />
+
+  <input
+    id="password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    type="password"
+    placeholder="Password"
+    className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAuth(); // submit when pressing Enter in password
+      }
+    }}
+  />
+
+  <button
+    type="submit"
+    className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-all transform hover:scale-105"
+  >
+    {authMode === "login" ? "Login" : "Register"}
+  </button>
+</form>
+
 
             {/* Social Login */}
             <div className="mt-6 flex justify-center gap-4">
