@@ -1,16 +1,95 @@
-# React + Vite
+Whisper Recall
+REMEMBER MORE. FORGET LESS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Overview
+MemoryLane is a personal digital memory assistant designed to capture, store, and help you revisit important online interactions automatically. It leverages browser extensions, backend APIs, and web interfaces to track user activities—like interactions on social media—and stores them securely for later retrieval and review.
 
-Currently, two official plugins are available:
+Features
+Automatic Interaction Capture
+Captures user interactions such as likes, comments, shares on Instagram through a Chrome extension or alternative approaches like network proxy.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Secure User Authentication
+Simple login system that generates session tokens to keep user memories isolated and secure.
 
-## React Compiler
+Backend Storage & API
+Stores memories in an in-memory data store via RESTful APIs with endpoints for login, adding memories, and fetching stored memories.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Frontend Dashboard
+User-friendly interface to log in, fetch, and view the memories captured from user interactions.
 
-## Expanding the ESLint configuration
+Configurable Auto Capture
+Enables or disables automatic capture from the extension popup.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Expandable Architecture
+Designed with modular components—backend, extension, frontend—to allow easy customization and scaling.
+
+Project Structure
+backend/ - Node.js Express server implementing token-based login and memory storage APIs.
+
+extension/ - Chrome extension capturing Instagram interactions with content and background scripts.
+
+frontend/ - Web portal for user login and memory viewing, implemented in HTML/JavaScript.
+
+proxy/ - (Optional) Python mitmproxy scripts for local proxy-based interaction capture.
+
+Installation & Setup
+Backend
+Navigate to backend/ folder.
+
+Install dependencies:
+
+bash
+npm install
+Run server:
+
+bash
+node server.js
+Backend runs on http://localhost:3000
+
+Chrome Extension
+Open Chrome and load extension as unpacked:
+
+Go to chrome://extensions/
+
+Enable Developer Mode
+
+Click “Load unpacked” and select the extension/ folder
+
+In the extension popup, enable “Auto Capture”.
+
+Browse Instagram to automatically capture interactions.
+
+Frontend
+Open frontend/index.html in your browser.
+
+Log in with a username to generate token.
+
+Fetch your captured memories from the backend.
+
+Optional: Local Proxy for Auto Capture
+Use Python’s mitmproxy to intercept Instagram network requests for users preferring not to use an extension (advanced).
+
+Usage
+Log in via frontend to receive a session token.
+
+Use extension or proxy to capture interactions tagged with your token.
+
+Fetch memories through frontend for a seamless personal log of social activities.
+
+Technologies
+Backend: Node.js, Express, CORS, crypto
+
+Frontend: HTML, JavaScript
+
+Browser Extension: Chrome extension APIs, message passing
+
+Proxy (optional): Python, mitmproxy
+
+Contributing
+Contributions and bug fixes are welcome. Feel free to submit pull requests or open issues.
+
+License
+This project is open source and free to use.
+
+Contact
+For questions or support, please open an issue on GitHub or contact the maintainers.
