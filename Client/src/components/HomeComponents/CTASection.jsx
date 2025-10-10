@@ -1,6 +1,12 @@
 import React from "react";
 
 const CTASection = ({ onStart }) => {
+  const enableExtension = () => {
+  // replace with your extension ID
+  const EXTENSION_ID = "kocmbebpdmdinjbaemilimbeiblhedpg";
+  window.open(`chrome-extension://${EXTENSION_ID}/popup.html`, "_blank");
+};
+
   return (
     <section className="relative text-center py-20 px-6 mt-16 rounded-3xl overflow-hidden bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-100 shadow-lg">
       {/* Floating Accent Shapes */}
@@ -17,7 +23,7 @@ const CTASection = ({ onStart }) => {
 
       {/* CTA Button */}
       <button
-        onClick={onStart}
+        onClick={enableExtension} 
         className="relative px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl font-semibold shadow-xl transform transition-all hover:scale-105 hover:shadow-2xl"
       >
         Start Capturing
