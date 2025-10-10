@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./Config/db.js";
 import userRouter from "./Routes/userRoute.js";
+import contentRouter from "./Routes/contentRoute.js";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 //API Endpoint to connect to user
 app.use('/api/user', userRouter)
+app.use('/api/content', contentRouter)
 
 app.get("/", (req, res) => {
   res.send("API is running...");
