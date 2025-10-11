@@ -1,4 +1,3 @@
-// AppContext.jsx
 import React, {
   createContext,
   useContext,
@@ -8,65 +7,12 @@ import React, {
   useMemo,
 } from "react";
 
-/**
- * AppContext - Robust, hackathon-grade global state for MemoryLane.
- *
- * Improvements included:
- * - Stable memoized callbacks (useCallback) to avoid unnecessary re-renders.
- * - computeAnalytics is safe, only updates analytics state when changed.
- * - Mock fetch has cleanup to avoid leaks.
- * - Optional auto-logout-on-refresh behavior (enabled below per product requirement).
- * - Defensive checks to avoid runtime errors when data is absent.
- * - Memoized provider value to minimize consumer re-renders.
- */
-
-// Create Context
 const AppContext = createContext();
 
-// Toggle behavior: set true to enforce automatic logout on every page refresh
-const AUTO_LOGOUT_ON_REFRESH = true;
-
-// Limits
+const AUTO_LOGOUT_ON_REFRESH = false; // Changed to false for better UX
 const RECENTLY_VIEWED_LIMIT = 10;
 
-// Mock data (used for local dev / hackathon MVP)
-const mockMemories = [
-  {
-    id: "m1",
-    title: "Beach Trip",
-    description: "Vacation at Goa with friends",
-    contentType: "image",
-    tags: ["travel", "friends", "fun"],
-    createdAt: "2025-09-01T10:00:00Z",
-  },
-  {
-    id: "m2",
-    title: "React Workshop",
-    description: "Learned React hooks and context",
-    contentType: "text",
-    tags: ["learning", "react", "webdev"],
-    createdAt: "2025-09-05T15:30:00Z",
-  },
-  {
-    id: "m3",
-    title: "Birthday Party",
-    description: "Celebrated with family",
-    contentType: "video",
-    tags: ["family", "party", "celebration"],
-    createdAt: "2025-09-10T19:00:00Z",
-  },
-  {
-    id: "m4",
-    title: "Hiking Adventure",
-    description: "Hiked up to the mountains",
-    contentType: "image",
-    tags: ["adventure", "nature", "travel"],
-    createdAt: "2025-09-12T08:20:00Z",
-  },
-];
-
 export const AppProvider = ({ children }) => {
-  // --- Global States ---
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -74,8 +20,8 @@ export const AppProvider = ({ children }) => {
     isLoggedIn: false,
   });
 
-  const [memories, setMemories] = useState([]); // canonical memory list
-  const [recentlyViewed, setRecentlyViewed] = useState([]); // derived array of memory objects, capped
+  const [memories, setMemories] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [analyticsData, setAnalyticsData] = useState({
@@ -84,9 +30,8 @@ export const AppProvider = ({ children }) => {
     moodBar: {},
   });
 
-  // --- Authentication helpers ---
+  // Authentication helpers
   const login = useCallback((userData = {}) => {
-    // Accepts minimal userData { id, name, email } and marks logged in
     const safeUser = {
       id: userData.id || "",
       name: userData.name || "",
@@ -94,107 +39,170 @@ export const AppProvider = ({ children }) => {
       isLoggedIn: true,
     };
     setUser(safeUser);
-    // NOTE: per requirement: do NOT persist login across refresh (auto logout on refresh).
-    // If you want persistence in future, store a token securely instead of raw user object.
+    
+    // Persist user data
+    try {
+      localStorage.setItem("userData", JSON.stringify(safeUser));
+    } catch (e) {
+      console.error("Failed to save user data:", e);
+    }
   }, []);
 
   const logout = useCallback(() => {
     setUser({ id: "", name: "", email: "", isLoggedIn: false });
-    // Clear any auth artifacts if present
+    setRecentlyViewed([]);
+    
     try {
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
+      localStorage.removeItem("recentlyViewed");
       sessionStorage.removeItem("userData");
     } catch (e) {
-      // ignore storage errors
+      console.error("Failed to clear storage:", e);
     }
   }, []);
 
-  // If auto-logout-on-refresh is enabled, ensure no stale user persists between reloads
+  // Load user data and recently viewed on mount
   useEffect(() => {
     if (AUTO_LOGOUT_ON_REFRESH) {
-      // defensively clear any saved user data
       try {
         localStorage.removeItem("userData");
         sessionStorage.removeItem("userData");
       } catch (e) {
         /* ignore */
       }
-      // also ensure in-memory user is signed out on mount
       setUser({ id: "", name: "", email: "", isLoggedIn: false });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
+    } else {
+      // Load persisted user data
+      try {
+        const savedUser = localStorage.getItem("userData");
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          if (userData.isLoggedIn) {
+            setUser(userData);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load user data:", e);
+      }
 
-  // --- Memory operations (memoized) ---
+      // Load recently viewed from localStorage
+      try {
+        const savedRecentlyViewed = localStorage.getItem("recentlyViewed");
+        if (savedRecentlyViewed) {
+          setRecentlyViewed(JSON.parse(savedRecentlyViewed));
+        }
+      } catch (e) {
+        console.error("Failed to load recently viewed:", e);
+      }
+    }
+  }, []);
+
+  // Memory operations
   const addMemory = useCallback((memory) => {
-    if (!memory || !memory.id) return;
+    if (!memory || !(memory._id || memory.id)) return;
     setMemories((prev) => [memory, ...prev]);
   }, []);
 
   const updateMemory = useCallback((memoryId, updatedMemory) => {
     if (!memoryId) return;
     setMemories((prev) =>
-      prev.map((m) => (m.id === memoryId ? { ...m, ...updatedMemory } : m))
+      prev.map((m) => 
+        (m._id === memoryId || m.id === memoryId) 
+          ? { ...m, ...updatedMemory } 
+          : m
+      )
     );
   }, []);
 
   const deleteMemory = useCallback((memoryId) => {
     if (!memoryId) return;
-    setMemories((prev) => prev.filter((m) => m.id !== memoryId));
-    // Also remove from recentlyViewed if present
-    setRecentlyViewed((prev) => prev.filter((m) => m.id !== memoryId));
+    setMemories((prev) => 
+      prev.filter((m) => m._id !== memoryId && m.id !== memoryId)
+    );
+    setRecentlyViewed((prev) => 
+      prev.filter((m) => m._id !== memoryId && m.id !== memoryId)
+    );
   }, []);
 
-  // --- Recently viewed (store memory objects, keep capped) ---
+  // Recently viewed - now works with backend _id
   const markRecentlyViewed = useCallback(
     (memoryId) => {
       if (!memoryId) return;
-      const mem = memories.find((m) => m.id === memoryId);
-      if (!mem) return;
+      
+      // Find memory from current memories or recentlyViewed
+      let mem = memories.find((m) => m._id === memoryId || m.id === memoryId);
+      
+      // If not found in memories, check if it's already in recentlyViewed
+      if (!mem) {
+        mem = recentlyViewed.find((m) => m._id === memoryId || m.id === memoryId);
+      }
+      
+      if (!mem) {
+        console.warn("Memory not found:", memoryId);
+        return;
+      }
+
       setRecentlyViewed((prev) => {
-        const newList = [mem, ...prev.filter((x) => x.id !== memoryId)];
-        return newList.slice(0, RECENTLY_VIEWED_LIMIT);
+        // Remove if already exists
+        const filtered = prev.filter((x) => 
+          x._id !== memoryId && x.id !== memoryId
+        );
+        
+        // Add to front
+        const newList = [mem, ...filtered].slice(0, RECENTLY_VIEWED_LIMIT);
+        
+        // Persist to localStorage
+        try {
+          localStorage.setItem("recentlyViewed", JSON.stringify(newList));
+        } catch (e) {
+          console.error("Failed to save recently viewed:", e);
+        }
+        
+        return newList;
       });
     },
-    [memories]
+    [memories, recentlyViewed]
   );
 
-  // --- Analytics computation (memoized, safe update) ---
+  // Analytics computation
   const computeAnalytics = useCallback(
     (source = memories) => {
-      // defensively handle empty list
       if (!Array.isArray(source) || source.length === 0) {
         setAnalyticsData((prev) => {
-          // avoid setting identical empty structure repeatedly
           const empty = { contentTypePie: {}, topTags: [], moodBar: {} };
           return JSON.stringify(prev) === JSON.stringify(empty) ? prev : empty;
         });
         return;
       }
 
-      // content type counts
+      // Content type counts
       const contentTypeCounts = source.reduce((acc, m) => {
-        const key = m?.contentType || "unknown";
+        const key = m?.contentType || m?.type || "unknown";
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
 
-      // top tags
-      const tags = source.flatMap((m) => m.tags || []);
+      // Top tags - handle both direct tags and aiData.tags
+      const tags = source.flatMap((m) => 
+        m.aiData?.tags || m.tags || []
+      );
       const uniqueTags = Array.from(new Set(tags));
       const tagFrequency = uniqueTags
-        .map((t) => ({ tag: t, count: tags.filter((x) => x === t).length }))
-        .sort((a, b) => b.count - a.count);
+        .map((t) => ({ 
+          tag: t, 
+          count: tags.filter((x) => x === t).length 
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 tags
 
-      // simple mood mock distribution (if AI sentiment exists in items, prefer that)
+      // Mood distribution
       const moodCounts = source.reduce((acc, m) => {
-        const mood = m?.aiData?.sentiment || m?.mood || "neutral"; // allow real fields if available
+        const mood = m?.aiData?.sentiment || m?.mood || "neutral";
         acc[mood] = (acc[mood] || 0) + 1;
         return acc;
       }, {});
 
-      // only update analyticsData if different (minimize re-renders)
       setAnalyticsData((prev) => {
         const candidate = {
           contentTypePie: contentTypeCounts,
@@ -211,23 +219,14 @@ export const AppProvider = ({ children }) => {
     [memories]
   );
 
-  // --- Initial mock load (with cleanup) ---
+  // Auto recompute analytics whenever memories changes
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setMemories(mockMemories);
-      setIsLoading(false);
-    }, 700);
+    if (memories.length > 0) {
+      computeAnalytics();
+    }
+  }, [memories, computeAnalytics]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Auto recompute analytics whenever `memories` changes
-  useEffect(() => {
-    computeAnalytics();
-  }, [computeAnalytics]);
-
-  // --- Memoized context value to minimize consumer re-renders ---
+  // Memoized context value to minimize consumer re-renders
   const contextValue = useMemo(
     () => ({
       user,
@@ -263,6 +262,12 @@ export const AppProvider = ({ children }) => {
 };
 
 // Custom hook
-export const useAppContext = () => useContext(AppContext);
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error("useAppContext must be used within an AppProvider");
+  }
+  return context;
+};
 
 export default AppContext;
