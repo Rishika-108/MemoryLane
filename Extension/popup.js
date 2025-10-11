@@ -2,6 +2,36 @@ const toggle = document.getElementById('toggle');
 const forceBtn = document.getElementById('force');
 const recent = document.getElementById('recent');
 
+forceBtn.addEventListener('click', async () => {
+  const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+  if (!tab) return;
+
+  // Temporarily change button text to indicate bookmarking
+  const originalText = forceBtn.textContent;
+  forceBtn.textContent = "✅ Bookmarked!";
+  forceBtn.disabled = true; // optional — prevent multiple clicks
+
+  // Inject capture script into current tab
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      const payload = {
+        url: location.href,
+        title: document.title,
+        selection: window.getSelection().toString().slice(0, 20000),
+        timestamp: new Date().toISOString(),
+        reason: 'manual_popup'
+      };
+      chrome.runtime.sendMessage({ type: 'capture_light', payload });
+    }
+  });
+
+  // Revert button back after 2 seconds
+  setTimeout(() => {
+    forceBtn.textContent = originalText;
+    forceBtn.disabled = false;
+  }, 2000);
+});
 
 // load setting
 chrome.storage.sync.get({enabled:true}, (res) => {
