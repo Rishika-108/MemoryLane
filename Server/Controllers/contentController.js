@@ -1,37 +1,6 @@
 import { analyzeContent } from "../Config/ai.js";
 import CapturedContent from "../Models/contentModel.js";
 
-// Saves the captured content from browser extension and AI processing to the database
-// export const saveCapturedData = async (req, res) => {
-//   try {
-//     const { url, title, type, aiData } = req.body;
-
-//     // Basic validation
-//     if (!url) {
-//       return res.status(400).json({ message: "URL is required." });
-//     }
-
-//     const newContent = new CapturedContent({
-//       userId: req.user.id, // from auth middleware
-//       url,
-//       title,
-//       type,
-//       aiData: aiData || {},
-//       screenshot: req.body.screenshot || "",
-//       reason: req.body.reason || ""
-
-//     });
-
-//     const savedContent = await newContent.save();
-//     return res.status(201).json({
-//       message: "Content saved successfully.",
-//       data: savedContent,
-//     });
-//   } catch (error) {
-//     console.error("Error saving content:", error);
-//     return res.status(500).json({ message: "Server error while saving content." });
-//   }
-// };
 
 export const saveCapturedData = async (req, res) => {
   try {
@@ -181,62 +150,4 @@ Content:
     console.error("❌ runAnalyser Error:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
-
-
-export const analyzeContentById = async (contentId, userId) => {
-  try {
-    const content = await CapturedContent.findOne({ _id: contentId, userId });
-    if (!content) throw new Error("Content not found for analysis");
-
-    const textToAnalyze = `${content.title}\n${content.url || ""}`.trim();
-    if (!textToAnalyze) throw new Error("Content has no text to analyze");
-
-    // --- Gemini prompt ---
-    const AI_KEY = process.env.GEMINI_API_KEY;
-    if (!AI_KEY) throw new Error("Missing Gemini API key");
-
-    const promptText = `... same prompt as in analyzeContent ...`;
-
-    const payload = { contents: [{ role: "user", parts: [{ text: promptText }] }] };
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${AI_KEY}`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
-    );
-
-    const rawText = await response.text();
-
-    let aiResult = {};
-    try {
-      const result = JSON.parse(rawText);
-      const textResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
-    } catch (err) {
-      console.error("❌ Failed to parse Gemini response:", err);
-    }
-
-    content.aiData = {
-      summary: aiResult.summary || "",
-      sentiment: aiResult.sentiment || "",
-      emotion: aiResult.emotion || "",
-      tags: aiResult.tags || [],
-      keywords: aiResult.keywords || aiResult.tags || [],
-      category: aiResult.category || "",
-    };
-    content.status = "processed";
-    await content.save();
-
-    console.log(`✅ AI analysis finished for ${contentId}`);
-    return content;
-  } catch (err) {
-    console.error("❌ analyzeContentById error:", err);
-    throw err;
-  }
-};
-export const runConnector = async (contentId, userId) => {
-  const updatedContent = await analyzeContentById(contentId, userId);
-  console.log("📊 Updated AI Data:", updatedContent.aiData);
-  return updatedContent;
 };
