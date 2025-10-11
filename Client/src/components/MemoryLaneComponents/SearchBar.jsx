@@ -29,7 +29,7 @@ const SearchBar = ({ searchTerm, setSearchTerm, onSearch }) => {
           className={`
             w-full pr-20 pl-6 py-5
             bg-black/10 backdrop-blur-lg
-            text-black/90 placeholder-black-400
+            text-white/90 placeholder-black-400
             rounded-3xl border border-gray-300/40
             focus:outline-none focus:ring-2 focus:ring-indigo-400/60
             shadow-lg hover:shadow-xl
