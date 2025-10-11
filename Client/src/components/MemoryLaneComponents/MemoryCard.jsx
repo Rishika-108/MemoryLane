@@ -23,14 +23,26 @@ const MemoryCard = ({ memory, onClick }) => (
     {/* Neon Glow Overlay */}
     <span className="absolute inset-0 rounded-3xl shadow-[0_0_30px_rgba(99,102,241,0.3)] pointer-events-none"></span>
 
-    {/* Memory Summary */}
-    <p className="font-bold text-white mb-4 text-lg md:text-xl leading-snug tracking-wide">
-      {memory.summary}
+    {/* Title */}
+    <h3 className="font-bold text-white mb-2 text-lg md:text-xl truncate">
+      {memory.title || "Untitled"}
+    </h3>
+
+    {/* Summary */}
+    <p className="text-white/80 mb-4 text-sm md:text-base leading-snug">
+      {memory.aiData.summary || "No summary available."}
     </p>
+
+    {/* Category */}
+    {memory.aiData.category && (
+      <span className="text-indigo-400 text-xs md:text-sm font-semibold mb-2 inline-block">
+        {memory.aiData.category}
+      </span>
+    )}
 
     {/* Tags */}
     <div className="flex flex-wrap gap-2 mb-4 z-10 relative">
-      {memory.tags.map((tag) => (
+      {memory.aiData.tags?.map((tag) => (
         <span
           key={tag}
           className="
@@ -68,7 +80,10 @@ const MemoryCard = ({ memory, onClick }) => (
 
     {/* Timestamp */}
     <p className="text-gray-400 text-xs md:text-sm mt-4 text-right z-10 relative">
-      {new Date(memory.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+      {new Date(memory.createdAt).toLocaleString([], {
+        dateStyle: "short",
+        timeStyle: "short",
+      })}
     </p>
   </motion.div>
 );
