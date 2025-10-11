@@ -10,7 +10,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeroSection />
+      <HeroSection openLoginModal={() => setShowLoginModal(true)} />
       <FeatureHighlights />
 
       {user?.isLoggedIn && (

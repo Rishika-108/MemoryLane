@@ -12,6 +12,8 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import ThoughtProcess from "../assets/ThoughtProcess.svg";
 
+
+
 const Header = () => {
   const { user, login, logout } = useAppContext();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -68,6 +70,8 @@ const Header = () => {
     // Save token locally (optional)
     localStorage.setItem("token", data.token);
 
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("isAuthenticated", "true");
     // Update context
     login({
       id: data.user.id,
@@ -76,8 +80,10 @@ const Header = () => {
       isLoggedIn: true,
     });
 
+
     setShowLoginModal(false);
     setFormData({ name: "", email: "", password: "" });
+    
   } catch (error) {
     console.error(error);
     alert("Something went wrong. Please try again.");
@@ -144,23 +150,11 @@ const Header = () => {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-lg overflow-hidden z-50 animate-fadeIn">
-                  <p
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-indigo-50 transition"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Profile
-                  </p>
-                  <p
-                    to="/settings"
-                    className="block px-4 py-2 hover:bg-indigo-50 transition"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Settings
-                  </p>
                   <button
                     onClick={() => {
                       logout();
+                      localStorage.removeItem("isAuthenticated");
+                      localStorage.removeItem("token");
                       setDropdownOpen(false);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-indigo-50 transition"
@@ -265,40 +259,69 @@ const Header = () => {
             </div>
 
             {/* Form Fields */}
-            {authMode === "register" && (
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                type="text"
-                placeholder="Full Name"
-                className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-              />
-            )}
-            <input
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              type="email"
-              placeholder="Email"
-              className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-            />
-            <input
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Password"
-              className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
-            />
+            <form
+  onSubmit={(e) => {
+    e.preventDefault(); // prevents page reload
+    handleAuth();        // same authentication logic
+  }}
+>
+  {authMode === "register" && (
+    <input
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      type="text"
+      placeholder="Full Name"
+      className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("email").focus(); // move to email
+        }
+      }}
+    />
+  )}
 
-            {/* Auth Button */}
-            <button
-              onClick={handleAuth}
-              className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-all transform hover:scale-105"
-            >
-              {authMode === "login" ? "Login" : "Register"}
-            </button>
+  <input
+    id="email"
+    name="email"
+    value={formData.email}
+    onChange={handleChange}
+    type="email"
+    placeholder="Email"
+    className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("password").focus(); // move to password
+      }
+    }}
+  />
+
+  <input
+    id="password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    type="password"
+    placeholder="Password"
+    className="w-full border border-white/30 bg-white/10 placeholder-gray-300 px-4 py-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 backdrop-blur-sm text-white transition"
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAuth(); // submit when pressing Enter in password
+      }
+    }}
+  />
+
+  <button
+    type="submit"
+    className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-all transform hover:scale-105"
+  >
+    {authMode === "login" ? "Login" : "Register"}
+  </button>
+</form>
+
 
             {/* Social Login */}
             <div className="mt-6 flex justify-center gap-4">

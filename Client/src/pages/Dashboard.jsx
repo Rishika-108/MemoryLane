@@ -6,19 +6,19 @@ import MoodAnalytics from "../components/DashboardComponents/MoodAnalytics";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
-  const { 
-    analyticsData, 
-    recentlyViewed, 
-    memories, 
-    computeAnalytics, 
-    markRecentlyViewed, 
-    isLoading 
+  const {
+    analyticsData,
+    recentlyViewed,
+    memories,
+    computeAnalytics,
+    markRecentlyViewed,
+    isLoading,
   } = useAppContext();
 
   // Recompute analytics whenever memories change
-  useEffect(() => {
-    computeAnalytics();
-  }, [memories, computeAnalytics]);
+  // useEffect(() => {
+  //   computeAnalytics();
+  // }, [memories, computeAnalytics]);
 
   // Memoize analytics to avoid unnecessary re-renders
   const memoizedAnalytics = useMemo(() => analyticsData || {}, [analyticsData]);
@@ -35,56 +35,75 @@ const Dashboard = () => {
   const RecentlyViewedSkeleton = () => (
     <div className="flex flex-wrap gap-6">
       {Array.from({ length: 4 }).map((_, idx) => (
-        <div key={idx} className="w-48 h-40 bg-gray-200/20 animate-pulse rounded-2xl"></div>
+        <div
+          key={idx}
+          className="w-48 h-40 bg-gray-200/20 animate-pulse rounded-2xl"
+        ></div>
       ))}
     </div>
   );
 
   return (
-    <div className="container mx-auto px-6 py-10 space-y-12 min-h-screen">
+    <div className="relative container mx-auto px-6 py-10 space-y-12 min-h-screen">
+  {/* Recently Viewed Memories */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+      Recently Viewed
+    </h2>
+    {isLoading ? (
+      <RecentlyViewedSkeleton />
+    ) : recentlyViewed?.length > 0 ? (
+      <RecentlyViewed
+        recentlyViewed={recentlyViewed}
+        onClick={markRecentlyViewed}
+      />
+    ) : (
+      <p className="text-gray-500 text-lg">
+        You haven’t viewed any memories yet. Start capturing to see them here!
+      </p>
+    )}
+  </motion.div>
 
-      {/* Recently Viewed Memories */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-          Recently Viewed
-        </h2>
-        {isLoading ? (
-          <RecentlyViewedSkeleton />
-        ) : recentlyViewed?.length > 0 ? (
-          <RecentlyViewed recentlyViewed={recentlyViewed} onClick={markRecentlyViewed} />
-        ) : (
-          <p className="text-gray-500 text-lg">
-            You haven’t viewed any memories yet. Start capturing to see them here!
-          </p>
-        )}
-      </motion.div>
+  {/* Analytics Section */}
+  <motion.section
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 0.2, duration: 0.6 }}
+  >
+    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+      Your Analytics
+    </h2>
+    {isLoading ? (
+      <AnalyticsSkeleton />
+    ) : (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <ContentAnalytics contentData={memoizedAnalytics} />
+        <MoodAnalytics moodData={memoizedAnalytics.moodBar || {}} />
+      </div>
+    )}
+  </motion.section>
 
-      <RecentlyViewed recentlyViewed={recentlyViewed} />
-      
+  {/* Background Purple Tint */}
+  <div className="absolute top-10 left-0 w-32 h-32 bg-indigo-200/40 rounded-full filter blur-3xl animate-float-slow -z-10" />
 
-      {/* Analytics Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-      >
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-          Your Analytics
-        </h2>
-        {isLoading ? (
-          <AnalyticsSkeleton />
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ContentAnalytics contentData={memoizedAnalytics} />
-            <MoodAnalytics moodData={memoizedAnalytics.moodBar || {}} />
-          </div>
-        )}
-      </motion.section>
-    </div>
+  {/* Background Floating Nodes */}
+  {Array.from({ length: 10 }).map((_, idx) => (
+    <div
+      key={idx}
+      className="absolute w-4 h-4 bg-indigo-400/30 rounded-full animate-float-slower -z-20"
+      style={{
+        top: `${Math.random() * 80}%`,
+        left: `${Math.random() * 90}%`,
+        animationDelay: `${Math.random() * 3}s`,
+      }}
+    />
+  ))}
+</div>
+
   );
 };
 
