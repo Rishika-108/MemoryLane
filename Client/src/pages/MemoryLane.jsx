@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAppContext } from "../AppContext";
 import SearchBar from "../components/MemoryLaneComponents/SearchBar";
-import MemoryGrid from "../components/MemoryLaneComponents/MemoryGrid";
+import MemoryGrid from "../Components/MemoryLaneComponents/MemoryGrid";
 import RecentlyViewed from "../components/MemoryLaneComponents/RecentlyViewed";
 import { motion, AnimatePresence } from "framer-motion";
 
