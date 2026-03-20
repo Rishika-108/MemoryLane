@@ -99,18 +99,18 @@ const Header = () => {
 
   return (
     <header
-  className={`relative w-full z-50 transition-all duration-300 ${
-    scrolled ? "shadow-xl bg-white/80 backdrop-blur-lg" : "bg-white/95"
+  className={`sticky top-0 w-full z-50 transition-all duration-300 ${
+    scrolled ? "shadow-xl bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/50" : "bg-transparent"
   }`}
 >
 
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link to="/" className="flex flex-col leading-tight">
-          <span className="text-2xl sm:text-3xl font-extrabold tracking-wide text-gray-900 font-sans bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 animate-gradient-x">
-            Whisper<span className="text-indigo-600">Recall</span>
+          <span className="text-2xl sm:text-3xl font-extrabold tracking-wide font-sans bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 animate-gradient-x">
+            Whisper<span className="text-indigo-400 font-bold">Recall</span>
           </span>
-          <span className="text-xs sm:text-sm font-medium text-gray-500 tracking-wide">
+          <span className="text-xs sm:text-sm font-medium text-slate-400 tracking-wide">
             REMEMBER MORE. FORGET LESS
           </span>
         </Link>
@@ -124,8 +124,8 @@ const Header = () => {
                 to={link.path}
                 className={`relative group transition-all duration-300 ${
                   location.pathname === link.path
-                    ? "text-indigo-600 underline"
-                    : "text-gray-700 hover:text-indigo-500"
+                    ? "text-indigo-400 font-semibold"
+                    : "text-slate-300 hover:text-indigo-400"
                 }`}
               >
                 {link.name}
@@ -141,15 +141,15 @@ const Header = () => {
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 border px-3 py-1 rounded-full hover:bg-gray-100 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="flex items-center gap-2 border border-slate-600 px-3 py-1 rounded-full text-slate-200 hover:bg-slate-700 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 aria-label="User menu"
               >
                 <FiUser size={20} />
-                <span className="hidden md:block">{user.name}</span>
+                <span className="hidden md:block text-slate-200">{user.name}</span>
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-lg overflow-hidden z-50 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-44 bg-slate-800 border border-slate-700 shadow-xl rounded-lg overflow-hidden z-50 animate-fadeIn">
                   <button
                     onClick={() => {
                       logout();
@@ -157,7 +157,7 @@ const Header = () => {
                       localStorage.removeItem("token");
                       setDropdownOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-indigo-50 transition"
+                    className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition"
                   >
                     Logout
                   </button>
@@ -178,7 +178,7 @@ const Header = () => {
         <div className="md:hidden">
           <button
             onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-600 hover:text-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="text-slate-300 hover:text-indigo-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
             {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -187,15 +187,15 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && user?.isLoggedIn && (
-        <nav className="md:hidden bg-white shadow-lg flex flex-col gap-2 px-6 py-4 animate-slideDown backdrop-blur-sm">
+        <nav className="md:hidden bg-slate-800 shadow-lg flex flex-col gap-2 px-6 py-4 border-b border-slate-700 animate-slideDown backdrop-blur-sm">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
-              className={`hover:text-indigo-500 font-medium transition-all duration-300 ${
+              className={`hover:text-indigo-400 font-medium transition-all duration-300 ${
                 location.pathname === link.path
-                  ? "text-indigo-600 underline"
-                  : "text-gray-700"
+                  ? "text-indigo-400"
+                  : "text-slate-300"
               }`}
               onClick={() => setMobileMenuOpen(false)}
             >

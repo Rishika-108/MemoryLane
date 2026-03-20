@@ -2,25 +2,45 @@ import mongoose from "mongoose";
 import CapturedContent from "../Models/contentModel.js";
 import fetch from "node-fetch";
 
-export const analyzeContent = async (req, res) => {
+export const generateEmbedding = async (text) => {
   try {
-    const { id } = req.params;
-    const userId = req.user.id;
+    const AI_KEY = process.env.GEMINI_API_KEY || "AIzaSyDuO6a_CI42UYasUgCBa99kTXuL-WfzAGc"; // Keep fallback for test execution
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${AI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "models/text-embedding-004",
+          content: { parts: [{ text }] },
+        }),
+      }
+    );
 
-    // 1️⃣ Validate ObjectId
+    const data = await response.json();
+    return data?.embedding?.values || [];
+  } catch (err) {
+    console.error("❌ Embedding generation failed:", err);
+    return [];
+  }
+};
+
+export const generateAIForContent = async (id, userId) => {
+  try {
+    // 1️⃣ Validate ObjectId (skip if just internal, but good for safety)
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid content ID." });
+      throw new Error("Invalid content ID.");
     }
 
     // 2️⃣ Fetch user content
     const content = await CapturedContent.findOne({ _id: id, userId });
     if (!content) {
-      return res.status(404).json({ message: "Content not found or unauthorized." });
+      throw new Error("Content not found or unauthorized.");
     }
 
     const textToAnalyze = `${content.title}\n${content.url || ""}`.trim();
     if (!textToAnalyze) {
-      return res.status(400).json({ message: "Content has no text to analyze." });
+      throw new Error("Content has no text to analyze.");
     }
 
     // 3️⃣ Prepare Gemini prompt
@@ -115,22 +135,41 @@ URL: "${content.url}"
     content.aiData = {
       summary: aiResult.summary || "",
       sentiment: aiResult.sentiment || "",
+      emotion: aiResult.emotion || "",
       tags: aiResult.tags || [],
       keywords: aiResult.keywords || aiResult.tags || [],
       category: aiResult.category || "",
     };
 
+    // 6.5️⃣ Generate Atlas Vector Search Embedding
+    const textToEmbed = `Title: ${content.title}. Summary: ${aiResult.summary || ""} Tags: ${(aiResult.tags || []).join(", ")}`;
+    content.embedding = await generateEmbedding(textToEmbed);
+
     // 7️⃣ Mark as processed and save
     content.status = "processed";
     await content.save();
+
+    return content;
+
+  } catch (err) {
+    console.error("❌ generateAIForContent Error:", err);
+    throw err;
+  }
+};
+
+export const analyzeContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const content = await generateAIForContent(id, userId);
 
     return res.status(200).json({
       message: "Content analyzed successfully.",
       aiData: content.aiData,
     });
-
   } catch (err) {
-    console.error("❌ analyzeContent Error:", err);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("❌ analyzeContent Response Error:", err);
+    return res.status(500).json({ message: err.message || "Internal Server Error" });
   }
 };

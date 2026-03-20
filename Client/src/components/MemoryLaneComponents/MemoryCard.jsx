@@ -4,6 +4,19 @@ import { motion } from "framer-motion";
 const MemoryCard = ({ memory, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Pick emotion color
+  const emotionColorMap = {
+    happy: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
+    sad: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+    angry: "bg-red-500/20 text-red-300 border-red-500/40",
+    excited: "bg-orange-500/20 text-orange-300 border-orange-500/40",
+    neutral: "bg-gray-500/20 text-gray-300 border-gray-500/40",
+    informative: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+    inspiring: "bg-pink-500/20 text-pink-300 border-pink-500/40"
+  };
+  
+  const emotionClass = emotionColorMap[memory.aiData?.emotion?.toLowerCase()] || "bg-indigo-500/20 text-indigo-300 border-indigo-500/40";
+
   return (
     <motion.div
       onClick={onClick}
@@ -14,16 +27,24 @@ const MemoryCard = ({ memory, onClick }) => {
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       className="
         relative group
-        bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl
+        bg-slate-800/80 backdrop-blur-xl
         p-6 rounded-3xl
-        shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-        hover:shadow-[0_20px_60px_rgba(99,102,241,0.25)]
+        shadow-[0_8px_30px_rgba(0,0,0,0.4)]
+        hover:shadow-[0_20px_60px_rgba(139,92,246,0.3)]
         cursor-pointer
-        border border-gray-200/50
+        border border-slate-700/60
         overflow-hidden
         transition-all duration-300
+        flex flex-col h-full
       "
     >
+      {/* Dynamic Emotion Badge (Top Right) */}
+      {memory.aiData?.emotion && (
+        <div className={`absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-full border shadow-sm ${emotionClass}`}>
+          {memory.aiData.emotion}
+        </div>
+      )}
+
       {/* Gradient Accent Bar */}
       <div className={`
         absolute top-0 left-0 right-0 h-1
@@ -40,38 +61,27 @@ const MemoryCard = ({ memory, onClick }) => {
       `} />
 
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col flex-1 mt-6">
         {/* Title */}
-        <h3 className="font-bold text-gray-900 mb-3 text-xl leading-tight">
+        <h3 className="font-bold text-white mb-3 text-xl leading-tight pr-2">
           {memory.title || "Untitled Memory"}
         </h3>
 
         {/* Summary */}
-        <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+        <p className="text-slate-300 mb-4 text-sm leading-relaxed line-clamp-3 overflow-hidden flex-1">
           {memory.aiData?.summary || "No summary available."}
         </p>
 
-        {/* Category Badge */}
-        {memory.aiData?.category && (
-          <div className="inline-flex items-center gap-2 mb-4">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold
-              bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-              shadow-md">
-              {memory.aiData.category}
-            </span>
-          </div>
-        )}
-
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4 mt-auto">
           {memory.aiData?.tags?.slice(0, 3).map((tag) => (
             <span
               key={tag}
               className="
                 px-3 py-1.5 rounded-full text-xs font-medium
-                bg-indigo-50 text-indigo-700
-                border border-indigo-200
-                hover:bg-indigo-100 hover:border-indigo-300
+                bg-slate-700/50 text-indigo-300
+                border border-indigo-500/30
+                hover:bg-indigo-500/20 hover:border-indigo-400
                 transition-all duration-200
               "
             >
@@ -81,17 +91,15 @@ const MemoryCard = ({ memory, onClick }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200/50">
-          {/* Timestamp */}
-          <p className="text-gray-500 text-xs">
-            {new Date(memory.createdAt).toLocaleDateString('en-US', { 
+        <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+          <p className="text-slate-400 text-xs">
+            {new Date(memory.createdAt || memory.timestamp).toLocaleDateString('en-US', { 
               month: 'short', 
               day: 'numeric',
               year: 'numeric'
             })}
           </p>
 
-          {/* Link Icon */}
           {memory.url && (
             <a
               href={memory.url}
@@ -100,7 +108,7 @@ const MemoryCard = ({ memory, onClick }) => {
               onClick={(e) => e.stopPropagation()}
               className="
                 flex items-center gap-1.5
-                text-indigo-600 hover:text-indigo-700
+                text-purple-400 hover:text-purple-300
                 text-xs font-medium
                 transition-colors duration-200
               "
@@ -113,19 +121,6 @@ const MemoryCard = ({ memory, onClick }) => {
           )}
         </div>
       </div>
-
-      {/* Corner Decoration */}
-      <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-purple-500/5 to-transparent rounded-tl-full pointer-events-none" />
-
-      {/* Add line-clamp styles */}
-      <style jsx>{`
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </motion.div>
   );
 };

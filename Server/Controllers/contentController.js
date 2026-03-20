@@ -1,48 +1,84 @@
-import { analyzeContent } from "../Config/ai.js";
+import { generateAIForContent } from "../Config/ai.js";
 import CapturedContent from "../Models/contentModel.js";
-
 
 export const saveCapturedData = async (req, res) => {
   try {
     const { url, title, type, aiData } = req.body;
+    const userId = req.user.id || req.user._id;
 
     if (!url) {
       return res.status(400).json({ message: "URL is required." });
     }
 
-    const newContent = new CapturedContent({
-      userId: req.user.id,
-      url,
-      title,
-      type,
-      aiData: aiData || {},
-      screenshot: req.body.screenshot || "",
-      reason: req.body.reason || ""
-    });
+    // 1️⃣ Privacy Protection Logic
+    if (req.user && req.user.blacklistedDomains) {
+      try {
+        const urlObj = new URL(url);
+        const isBlacklisted = req.user.blacklistedDomains.some(domain => urlObj.hostname.includes(domain));
+        if (isBlacklisted) {
+          return res.status(403).json({ message: "Capture blocked: Domain is blacklisted for privacy." });
+        }
+      } catch (e) {
+        console.warn("Invalid URL format parsed checking privacy blacklist:", url);
+      }
+    }
 
-    const savedContent = await newContent.save();
+    // 2️⃣ Advanced Deduplication Logic (URL + Title)
+    const duplicateQuery = { userId, $or: [{ url }] };
+    if (title && title.trim() !== "") {
+      duplicateQuery.$or.push({ title });
+    }
+    
+    let savedContent = await CapturedContent.findOne(duplicateQuery);
 
-    // --- Trigger AI analysis immediately ---
-    // Call the runAnalyser logic directly (without HTTP request)
-    analyzeContent(savedContent._id, req.user.id).catch(err => {
-      console.error("❌ AI analysis failed:", err);
-    });
+    if (!savedContent) {
+      const newContent = new CapturedContent({
+        userId,
+        url,
+        title,
+        type,
+        status: "processing", // Setting status explicitly
+        aiData: aiData || {},
+        screenshot: req.body.screenshot || "",
+        reason: req.body.reason || ""
+      });
+      savedContent = await newContent.save();
+    }
 
-    return res.status(201).json({
-      message: "Content saved successfully and AI analysis triggered.",
-      data: savedContent,
-    });
+    // --- Trigger AI analysis immediately & await result to send back ---
+    try {
+      const processedContent = await generateAIForContent(savedContent._id, userId);
+      return res.status(201).json({
+        ok: true,
+        id: processedContent._id,
+        message: "Content saved successfully and AI analysis complete.",
+        aiData: processedContent.aiData,
+        data: processedContent
+      });
+    } catch (err) {
+      console.error("❌ AI analysis failed during capture:", err);
+      // Return the saved raw content even if AI fails
+      savedContent.status = "error";
+      await savedContent.save();
+      
+      return res.status(201).json({
+        ok: true,
+        id: savedContent._id,
+        message: "Content saved, but AI analysis failed or is pending.",
+        data: savedContent
+      });
+    }
+
   } catch (error) {
     console.error("Error saving content:", error);
     return res.status(500).json({ message: "Server error while saving content." });
   }
 };
 
-
 // Get all the content data for the web dashboard
 export const getUserContent = async (req, res) => {
   try {
-    const userId = req.user.id; // from JWT middleware
+    const userId = req.user.id || req.user._id; // from JWT middleware
     const { type, status } = req.query; // optional filters
 
     const filter = { userId };
@@ -62,92 +98,3 @@ export const getUserContent = async (req, res) => {
   }
 };
 
-export const runAnalyser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid content ID." });
-    }
-
-    // 1️⃣ Fetch the content
-    const content = await CapturedContent.findOne({ _id: id, userId });
-    if (!content) {
-      return res.status(404).json({ message: "Content not found or unauthorized." });
-    }
-
-    const textToAnalyze = `${content.title}\n${content.url || ""}`;
-    if (!textToAnalyze.trim()) {
-      return res.status(400).json({ message: "Content has no text to analyze." });
-    }
-
-    // 2️⃣ Call AI service
-    const payload = {
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: `
-You are a cognitive coach. Analyze the following content and generate exactly one object with:
-- "summary": 2–3 sentence summary
-- "sentiment": positive / neutral / negative
-- "tags": 3–6 relevant keywords
-- "category": 1–2 words classification
-
-Content:
-"${textToAnalyze}"
-              `,
-            },
-          ],
-        },
-      ],
-    };
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    const rawText = await response.text();
-
-    // 3️⃣ Parse AI response safely
-    let parsedData = [];
-    try {
-      // Extract JSON array/object from the text
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/) || rawText.match(/\[\s*{[\s\S]*}\s*\]/);
-      const jsonString = jsonMatch ? jsonMatch[0] : rawText;
-      parsedData = JSON.parse(jsonString);
-    } catch (err) {
-      console.error("❌ Failed to parse AI response:", err);
-    }
-
-    // 4️⃣ Map AI output to aiData
-    const aiResult = parsedData || {};
-    content.aiData = {
-      summary: aiResult.summary || "",
-      sentiment: aiResult.sentiment || "",
-      emotion: aiResult.emotion || "",
-      tags: aiResult.tags || [],
-      keywords: aiResult.tags || [], // reuse tags as keywords if not provided
-      category: aiResult.category || "",
-    };
-
-    content.status = "processed"; // update processing status
-    await content.save();
-
-    res.status(200).json({
-      message: "Content analyzed successfully.",
-      aiData: content.aiData,
-    });
-
-  } catch (err) {
-    console.error("❌ runAnalyser Error:", err);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};

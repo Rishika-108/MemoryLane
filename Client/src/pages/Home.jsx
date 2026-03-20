@@ -9,7 +9,7 @@ const Home = () => {
   const { user, recentlyViewed, isLoading } = useAppContext();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen text-white bg-transparent">
       <HeroSection openLoginModal={() => setShowLoginModal(true)} />
       <FeatureHighlights />
 

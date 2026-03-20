@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppContext } from "../AppContext";
 import SearchBar from "../components/MemoryLaneComponents/SearchBar";
-import MemoryGrid from "../Components/MemoryLaneComponents/MemoryGrid";
+import MemoryGrid from "../components/MemoryLaneComponents/MemoryGrid";
 import RecentlyViewed from "../components/MemoryLaneComponents/RecentlyViewed";
+import Timeline from "../components/MemoryLaneComponents/Timeline";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Error Boundary for MemoryLane
@@ -78,91 +79,53 @@ const MemoryLane = () => {
     fetchMemories();
   }, []);
 
-  // Frontend-only search: filter allMemories based on searchTerm
-  const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) return [];
-    const lowerTerm = searchTerm.toLowerCase();
-    return allMemories.filter(
-      (m) =>
-        m.title?.toLowerCase().includes(lowerTerm) ||
-        m.aiData?.summary?.toLowerCase().includes(lowerTerm) ||
-        m.aiData?.tags?.some((tag) => tag.toLowerCase().includes(lowerTerm)) ||
-        m.aiData?.keywords?.some((kw) => kw.toLowerCase().includes(lowerTerm))
-    );
-  }, [searchTerm, allMemories]);
+  const [searchMode, setSearchMode] = useState("keyword");
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Search execution hitting the backend matching logical modes (Semantic vs DB Matches)
+  const executeSearch = async () => {
+    if (!searchTerm.trim()) {
+      setHasSearched(false);
+      setSearchResults([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const payload = {};
+      
+      if (searchMode === "keyword") payload.keyword = searchTerm;
+      else if (searchMode === "emotion") payload.mood = searchTerm;
+      else if (searchMode === "semantic") payload.semanticQuery = searchTerm;
+
+      const res = await fetch("http://localhost:5000/api/content/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Search configuration failed.");
+      
+      const data = await res.json();
+      setSearchResults(data.data || []);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setError("Failed to execute search query.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <MemoryLaneErrorBoundary>
-      <div 
-        className="relative min-h-screen flex flex-col px-6 py-10 overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
-        }}
-      >
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Gradient Orbs */}
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-20 left-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.25, 0.45, 0.25],
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl"
-          />
-
-          {/* Floating Particles */}
-          {Array.from({ length: 15 }).map((_, idx) => (
-            <motion.div
-              key={idx}
-              animate={{
-                y: [0, -30, 0],
-                x: [0, Math.random() * 20 - 10, 0],
-                opacity: [0.2, 0.5, 0.2],
-              }}
-              transition={{
-                duration: 4 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: "easeInOut",
-              }}
-              className="absolute w-2 h-2 bg-purple-400/40 rounded-full"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-            />
-          ))}
-
-          {/* Grid Pattern Overlay */}
-          <div 
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage: `linear-gradient(rgba(168, 85, 247, 0.3) 1px, transparent 1px),
-                               linear-gradient(90deg, rgba(168, 85, 247, 0.3) 1px, transparent 1px)`,
-              backgroundSize: '50px 50px'
-            }}
-          />
-        </div>
-
+      <div className="relative min-h-screen flex flex-col px-6 py-10 overflow-hidden text-white w-full max-w-[1600px] mx-auto">
         {/* Content Container */}
-        <div className="relative z-10 max-w-[1600px] mx-auto w-full">
+        <div className="relative z-10 w-full">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -184,9 +147,18 @@ const MemoryLane = () => {
           >
             <SearchBar
               searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              onSearch={() => {}}
+              setSearchTerm={(val) => {
+                setSearchTerm(val);
+                if (!val) setHasSearched(false); // Reset on empty clear
+              }}
+              onSearch={executeSearch}
+              searchMode={searchMode}
+              setSearchMode={setSearchMode}
             />
+          </motion.div>
+          
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+             {!hasSearched && allMemories.length > 0 && <Timeline memories={allMemories} />}
           </motion.div>
 
           {/* Recently Viewed Section */}
@@ -262,7 +234,7 @@ const MemoryLane = () => {
                         Found <span className="text-purple-400 font-semibold">{searchResults.length}</span> {searchResults.length === 1 ? 'result' : 'results'}
                       </p>
                     </div>
-                    <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} />
+                    <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} isLoading={isLoading} error={error}/>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -279,9 +251,9 @@ const MemoryLane = () => {
                     </div>
                     <h3 className="text-2xl font-semibold text-white mb-2">No Results Found</h3>
                     <p className="text-gray-400">
-                      No memories found for <span className="text-purple-400 font-semibold">"{searchTerm}"</span>
+                      No memories found for <span className="text-purple-400 font-semibold">"{searchTerm}"</span> in <span className="text-pink-400 font-semibold">{searchMode}</span> mode.
                     </p>
-                    <p className="text-gray-500 text-sm mt-2">Try different keywords or check your spelling</p>
+                    <p className="text-gray-500 text-sm mt-2">Try different search terms or toggle semantic search</p>
                   </motion.div>
                 )
               ) : allMemories.length > 0 ? (
@@ -297,7 +269,7 @@ const MemoryLane = () => {
                       Showing <span className="text-purple-400 font-semibold">{allMemories.length}</span> {allMemories.length === 1 ? 'memory' : 'memories'}
                     </p>
                   </div>
-                  <MemoryGrid memories={allMemories} onClick={markRecentlyViewed} />
+                  <MemoryGrid memories={allMemories} onClick={markRecentlyViewed} isLoading={isLoading} error={error} />
                 </motion.div>
               ) : (
                 // Empty State

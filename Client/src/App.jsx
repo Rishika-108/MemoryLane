@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import MemoryLane from "./pages/MemoryLane";
+import AnimatedBackground from "./components/AnimatedBackground";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -26,16 +27,31 @@ const App = () => {
     }
   }, []);
 
-  // 🧠 (Optional) Example login logic can be handled elsewhere
-  // const handleLogin = () => {
-  //   localStorage.setItem("isAuthenticated", "true");
-  //   setIsAuthenticated(true);
-  // };
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.source !== window) return;
+      if (event.data.type === "REQUEST_TOKEN") {
+        const token = localStorage.getItem("token");
+        if (token) {
+          window.postMessage({ type: "TOKEN_RESPONSE", token }, "*");
+          console.log("🔐 Token sent to Chrome Extension:", token);
+        } else {
+          console.log("⚠️ No token found in localStorage.");
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
 
   return (
     <Router>
-      <Header />
-      <Routes>
+      <AnimatedBackground />
+      <div className="relative z-0 min-h-screen flex flex-col font-sans">
+        <Header />
+        <Routes>
         {/* Public Route */}
         <Route path="/" element={<Home />} />
 
@@ -61,6 +77,7 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Footer />
+      </div>
     </Router>
   );
 };

@@ -17,6 +17,7 @@ const capturedContentSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now},
   status: { type: String, enum: ["raw", "processing", "processed", "error"], default: "raw"},
   aiData: { type: aiDataSchema, default: () => ({}) },
+  embedding: { type: [Number], default: [] },
   screenshot: { type: String, default: "" },
   reason: { type: String, default: "" }
 }, { timestamps: true });
