@@ -44,7 +44,7 @@ export const generateAIForContent = async (id, userId) => {
     }
 
     // 3️⃣ Prepare Gemini prompt
-    const AI_KEY = process.env.GEMINI_API_KEY || AIzaSyDuO6a_CI42UYasUgCBa99kTXuL-WfzAGc;
+    const AI_KEY = process.env.GEMINI_API_KEY;
     if (!AI_KEY) {
       return res.status(500).json({ message: "Missing Gemini API key in environment variables." });
     }
