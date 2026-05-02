@@ -1,8 +1,8 @@
 import React from "react";
-import HeroSection from "../components/HomeComponents/Hero";
-import FeatureHighlights from "../components/HomeComponents/FeatureHighlights";
-import RecentMemories from "../components/HomeComponents/RecentMemories";
-import CTASection from "../components/HomeComponents/CTASection";
+import HeroSection from "../Components/HomeComponents/Hero";
+import FeatureHighlights from "../Components/HomeComponents/FeatureHighlights";
+import RecentMemories from "../Components/HomeComponents/RecentMemories";
+import CTASection from "../Components/HomeComponents/CTASection";
 import { useAppContext } from "../AppContext";
 
 const Home = () => {
@@ -10,7 +10,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen text-white bg-transparent">
-      <HeroSection openLoginModal={() => setShowLoginModal(true)} />
+      <HeroSection />
       <FeatureHighlights />
 
       {user?.isLoggedIn && (

@@ -1,32 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import MemoryLane from "./pages/MemoryLane";
-import AnimatedBackground from "./components/AnimatedBackground";
+import Header from "./Components/Header";
+import Footer from "./Components/Footer";
+import Home from "./Pages/Home";
+import Dashboard from "./Pages/Dashboard";
+import MemoryLane from "./Pages/MemoryLane";
+import AnimatedBackground from "./Components/AnimatedBackground";
+import { useAppContext } from "./AppContext";
 
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  const { user } = useAppContext();
+  return user.isLoggedIn ? children : <Navigate to="/" replace />;
 };
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // 🔒 Handle auto logout on refresh
-  useEffect(() => {
-    const session = localStorage.getItem("isAuthenticated");
-    if (session === "true") {
-      // Immediately clear auth on page reload (forces re-login)
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("token");
-      setIsAuthenticated(false);
-    }
-  }, []);
-
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.source !== window) return;
@@ -52,31 +40,31 @@ const App = () => {
       <div className="relative z-0 min-h-screen flex flex-col font-sans">
         <Header />
         <Routes>
-        {/* Public Route */}
-        <Route path="/" element={<Home />} />
+          {/* Public Route */}
+          <Route path="/" element={<Home />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/memorylane"
-          element={
-            <ProtectedRoute>
-              <MemoryLane />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/memorylane"
+            element={
+              <ProtectedRoute>
+                <MemoryLane />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Catch-all route to prevent unknown page access */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <Footer />
+          {/* Catch-all route to prevent unknown page access */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Footer />
       </div>
     </Router>
   );

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from "react";
 import { useAppContext } from "../AppContext";
-import RecentlyViewed from "../components/DashboardComponents/RecentlyViewed";
-import ContentAnalytics from "../components/DashboardComponents/ContentAnalytics";
-import MoodAnalytics from "../components/DashboardComponents/MoodAnalytics";
+import RecentlyViewed from "../Components/DashboardComponents/RecentlyViewed";
+import ContentAnalytics from "../Components/DashboardComponents/ContentAnalytics";
+import MoodAnalytics from "../Components/DashboardComponents/MoodAnalytics";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {

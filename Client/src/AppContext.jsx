@@ -23,6 +23,7 @@ export const AppProvider = ({ children }) => {
   const [memories, setMemories] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [analyticsData, setAnalyticsData] = useState({
     contentTypePie: {},
@@ -241,6 +242,8 @@ export const AppProvider = ({ children }) => {
       analyticsData,
       computeAnalytics,
       isLoading,
+      showLoginModal,
+      setShowLoginModal,
     }),
     [
       user,
@@ -248,6 +251,8 @@ export const AppProvider = ({ children }) => {
       recentlyViewed,
       analyticsData,
       isLoading,
+      showLoginModal,
+      setShowLoginModal,
       login,
       logout,
       addMemory,

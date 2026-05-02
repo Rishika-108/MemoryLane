@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 
 export const generateEmbedding = async (text) => {
   try {
-    const AI_KEY = process.env.GEMINI_API_KEY || "AIzaSyDuO6a_CI42UYasUgCBa99kTXuL-WfzAGc"; // Keep fallback for test execution
+    const AI_KEY = process.env.GEMINI_API_KEY  // Keep fallback for test execution
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${AI_KEY}`,
       {

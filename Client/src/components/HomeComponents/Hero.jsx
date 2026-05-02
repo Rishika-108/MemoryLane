@@ -19,36 +19,36 @@ const HeroSection = () => {
     if (user?.isLoggedIn) {
       navigate("/memorylane");
     } else {
-      openLoginModal(); // call the function from Header
+      setShowLoginModal(true); // call the function from context
     }
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white py-28 px-6">
+    <section className="relative overflow-hidden bg-transparent py-28 px-6">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-12 relative z-20">
         {/* Left Content */}
         <div className="max-w-xl space-y-6 z-20 relative">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight tracking-tight">
             Capture Your Digital Trail.{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
               Summarize Smarter.
             </span>{" "}
             Relive Effortlessly.
           </h1>
-          <p className="text-gray-600 text-lg md:text-xl">
-            WhisperRecall automatically logs your digital interactions and turns
+          <p className="text-gray-400 text-lg md:text-xl">
+            MemoryLane automatically logs your digital interactions and turns
             them into visual memory snapshots — all in the background,
             seamlessly.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <button onClick={enableExtension} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transform transition-all duration-300">
+            <button onClick={enableExtension} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transform transition-all duration-300 shadow-purple-500/25">
               Start Capturing Memories
             </button>
             <button
               type="button"
               onClick={goToPage}
-              className="border border-indigo-500 text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition transform hover:scale-105"
+              className="border border-purple-500/50 text-purple-400 px-6 py-3 rounded-xl font-semibold hover:bg-purple-500/10 transition transform hover:scale-105"
             >
               Explore Timeline
             </button>
@@ -57,10 +57,10 @@ const HeroSection = () => {
 
         {/* Right Illustration */}
         <div className="relative w-full max-w-lg md:max-w-xl">
-          <div className="bg-white/20 backdrop-blur-xl rounded-3xl p-6 shadow-2xl overflow-hidden relative z-10">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden relative z-10">
             {/* Animated Lottie */}
             <Lottie animationData={memoryFlowAnimation} loop={true} />
-            <div className="absolute -bottom-4 -right-4 bg-indigo-100 px-4 py-1 rounded-full text-sm font-medium text-indigo-700 shadow-md">
+            <div className="absolute -bottom-4 -right-4 bg-purple-500/20 backdrop-blur-md border border-purple-500/30 px-4 py-1 rounded-full text-sm font-medium text-purple-300 shadow-md">
               ✨ Automated Memory Capture
             </div>
           </div>
@@ -71,7 +71,7 @@ const HeroSection = () => {
       {Array.from({ length: 10 }).map((_, idx) => (
         <div
           key={idx}
-          className="absolute w-4 h-4 bg-indigo-400/30 rounded-full animate-float-slower"
+          className="absolute w-4 h-4 bg-purple-400/20 rounded-full animate-float-slower"
           style={{
             top: `${Math.random() * 80}%`,
             left: `${Math.random() * 90}%`,

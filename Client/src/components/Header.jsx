@@ -15,9 +15,8 @@ import ThoughtProcess from "../assets/ThoughtProcess.svg";
 
 
 const Header = () => {
-  const { user, login, logout } = useAppContext();
+  const { user, login, logout, showLoginModal, setShowLoginModal } = useAppContext();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [authMode, setAuthMode] = useState("login"); // 'login' or 'register'
@@ -107,8 +106,8 @@ const Header = () => {
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link to="/" className="flex flex-col leading-tight">
-          <span className="text-2xl sm:text-3xl font-extrabold tracking-wide font-sans bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 animate-gradient-x">
-            Whisper<span className="text-indigo-400 font-bold">Recall</span>
+          <span className="text-2xl sm:text-3xl font-extrabold tracking-wide font-sans bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 animate-gradient-x">
+            Memory<span className="text-purple-400 font-bold">Lane</span>
           </span>
           <span className="text-xs sm:text-sm font-medium text-slate-400 tracking-wide">
             REMEMBER MORE. FORGET LESS
@@ -124,12 +123,12 @@ const Header = () => {
                 to={link.path}
                 className={`relative group transition-all duration-300 ${
                   location.pathname === link.path
-                    ? "text-indigo-400 font-semibold"
-                    : "text-slate-300 hover:text-indigo-400"
+                    ? "text-purple-400 font-semibold"
+                    : "text-slate-300 hover:text-purple-400"
                 }`}
               >
                 {link.name}
-                <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-indigo-500 transition-all group-hover:w-full"></span>
+                <span className={`absolute left-0 bottom-0 h-[2px] bg-purple-500 transition-all group-hover:w-full ${location.pathname === link.path ? 'w-full' : 'w-0'}`}></span>
               </Link>
             ))}
           </nav>
@@ -167,7 +166,7 @@ const Header = () => {
           ) : (
             <button
               onClick={() => setShowLoginModal(true)}
-              className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-500 transition shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-500 hover:to-pink-500 transition shadow-md shadow-purple-500/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
             >
               <FiLogIn size={18} /> Login / Register
             </button>
