@@ -3,11 +3,21 @@ const ANALYZE_URL = 'http://localhost:5000/api/analyze';
 const lastCaptureAt = {};
 const CAPTURE_INTERVAL_MS = 30_000;
 
-chrome.runtime.onMessage.addListener((message, sender) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("📩 Received message in background:", message);
+  
   if (message?.type === 'capture_light') {
     handleLightCapture(message.payload, sender.tab).catch(console.error);
+  } else if (message?.type === 'SET_SESSION') {
+    chrome.storage.local.set({ 
+      token: message.token, 
+      userId: message.userId || null,
+      lastSync: new Date().toISOString()
+    }, () => {
+      console.log("✅ Session updated in background storage");
+    });
   }
+  return true;
 });
 
 async function handleLightCapture(payload, tab) {
@@ -31,8 +41,8 @@ async function handleLightCapture(payload, tab) {
     });
     console.log("🧠 Got userId/token:", userId, !!token);
 
-    if (!userId) {
-      console.warn("⚠️ No userId found in chrome.storage.local");
+    if (!userId && !token) {
+      console.warn("⚠️ No userId or token found in chrome.storage.local. Capture aborted.");
       return;
     }
 

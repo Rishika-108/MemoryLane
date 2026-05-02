@@ -115,10 +115,24 @@
 // });
 
 // popup.js
-
 const toggle = document.getElementById('toggle');
 const forceBtn = document.getElementById('force');
 const recent = document.getElementById('recent');
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+
+// 🔐 Step 1: Update UI based on connection
+function updateConnectionStatus(token) {
+  if (token) {
+    statusDot.classList.remove('offline');
+    statusText.textContent = "Vault Connected";
+    statusText.style.color = "#4ade80";
+  } else {
+    statusDot.classList.add('offline');
+    statusText.textContent = "Vault Disconnected (Login required)";
+    statusText.style.color = "#f87171";
+  }
+}
 
 // 🔐 Step 2: Request JWT from the webpage via content script
 async function fetchToken() {
@@ -129,24 +143,27 @@ async function fetchToken() {
     const token = response?.token;
     if (token) {
       chrome.storage.local.set({ token });
-      console.log("✅ Token saved in extension:", token);
+      updateConnectionStatus(token);
+      console.log("✅ Token found via tab bridge");
     } else {
-      console.warn("⚠️ No token found — opening login page");
-      chrome.tabs.create({ url: "http://localhost:5173/" }); // or deployed login
+      // Check if we already have it stored
+      chrome.storage.local.get("token", (res) => {
+        updateConnectionStatus(res.token);
+      });
     }
   });
 }
-
-// Call fetchToken when popup opens
-fetchToken();
 
 // Bookmark / force capture button
 forceBtn.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
-  const originalText = forceBtn.textContent;
-  forceBtn.textContent = "✅ Bookmarked!";
+  const originalContent = forceBtn.innerHTML;
+  forceBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    Saved!
+  `;
   forceBtn.disabled = true;
 
   chrome.scripting.executeScript({
@@ -161,16 +178,16 @@ forceBtn.addEventListener('click', async () => {
       const payload = {
         url: location.href,
         title: document.title,
-        selection: text.slice(0, 20000),
+        content: text.slice(0, 30000),
         timestamp: new Date().toISOString(),
-        reason: 'manual_popup'
+        reason: 'manual-button'
       };
       chrome.runtime.sendMessage({ type: 'capture_light', payload });
     }
   });
 
   setTimeout(() => {
-    forceBtn.textContent = originalText;
+    forceBtn.innerHTML = originalContent;
     forceBtn.disabled = false;
   }, 2000);
 });
@@ -188,14 +205,27 @@ toggle.addEventListener('change', () => {
 function renderRecent(items) {
   recent.innerHTML = '';
   items = items || [];
+  
+  if (items.length === 0) {
+    recent.innerHTML = '<li style="text-align:center; color:var(--text-secondary); background:transparent; border:none;">No recent captures</li>';
+    return;
+  }
+
   for (const it of items.slice(0, 8)) {
     const li = document.createElement('li');
-    li.textContent = `${new Date(it.timestamp).toLocaleTimeString()} - ${it.title || it.url}`;
+    const time = new Date(it.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    li.innerHTML = `<span class="timestamp">${time}</span> ${it.title || it.url}`;
+    li.title = it.title || it.url;
     recent.appendChild(li);
   }
 }
 
-chrome.storage.local.get({ recentCaptures: [] }, (res) => renderRecent(res.recentCaptures));
+// Initial Load
+chrome.storage.local.get({ recentCaptures: [], token: null }, (res) => {
+  renderRecent(res.recentCaptures);
+  updateConnectionStatus(res.token);
+  fetchToken();
+});
 
 // Update recent captures dynamically
 chrome.runtime.onMessage.addListener((msg) => {

@@ -4,105 +4,264 @@
 <meta charset="utf-8" />
 <title>Memory Lane</title>
 <style>
+  :root {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --accent: #8b5cf6; /* violet-500 */
+    --accent-hover: #7c3aed; /* violet-600 */
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: rgba(139, 92, 246, 0.2);
+  }
+
   body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    width: 340px;
-    padding: 16px;
-    background: #f9fafb;
-    color: #1f2937;
+    font-family: 'Inter', -apple-system, sans-serif;
+    width: 350px;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    overflow: hidden;
   }
 
-  h3 {
-    margin: 0 0 12px 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #111827;
-    text-align: center;
+  .container {
+    padding: 20px;
+    backdrop-blur: 10px;
   }
 
-  label {
+  .header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: #ffffff;
-    padding: 10px 12px;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(to r, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80; /* green-400 */
+    box-shadow: 0 0 8px #4ade80;
+  }
+
+  .status-dot.offline {
+    background: #f87171;
+    box-shadow: 0 0 8px #f87171;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  label.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     cursor: pointer;
   }
 
-  input[type="checkbox"] {
-    transform: scale(1.2);
-    accent-color: #2563eb; /* blue checkmark */
-  }
-
-  button {
-    margin-top: 10px;
-    width: 100%;
-    padding: 10px 14px;
+  .toggle-text {
     font-size: 14px;
     font-weight: 500;
-    background: #2563eb;
+  }
+
+  /* Custom Switch */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.1);
+    transition: .4s;
+    border-radius: 24px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: var(--accent);
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+
+  button#force {
+    background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
     color: white;
     border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  }
-
-  button:hover {
-    background: #1d4ed8;
-  }
-
-  h4 {
-    margin-top: 16px;
-    font-size: 14px;
+    padding: 12px;
+    border-radius: 12px;
     font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
   }
 
-  ul {
-    margin: 8px 0 0 0;
+  button#force:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  }
+
+  button#force:active {
+    transform: translateY(0);
+  }
+
+  button#force:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 8px 0 12px 0;
+  }
+
+  ul#recent {
+    margin: 0;
     padding: 0;
     list-style: none;
-    max-height: 160px;
+    max-height: 180px;
     overflow-y: auto;
   }
 
-  ul li {
-    background: #fff;
-    margin-bottom: 6px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #374151;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  ul#recent li {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  ul li:hover {
-    background: #f3f4f6;
+  ul#recent li:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .timestamp {
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* Custom Scrollbar */
+  ul#recent::-webkit-scrollbar {
+    width: 4px;
+  }
+  ul#recent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ul#recent::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
   }
 </style>
 </head>
 <body>
-  <h3>📒 Memory Lane</h3>
+  <div class="container">
+    <div class="header">
+      <span style="font-size: 24px;">📒</span>
+      <h3>Memory Lane</h3>
+    </div>
 
-  <div>
-    <label>
-      <input id="toggle" type="checkbox" />
-      Enable auto-capture
-    </label>
+    <div class="status-badge">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Connecting to Vault...</span>
+    </div>
+
+    <div class="card">
+      <div class="control-group">
+        <label class="toggle-row">
+          <span class="toggle-text">Auto-Capture Mode</span>
+          <div class="switch">
+            <input id="toggle" type="checkbox" checked>
+            <span class="slider"></span>
+          </div>
+        </label>
+        
+        <button id="force">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Capture Tab
+        </button>
+      </div>
+    </div>
+
+    <div class="section-title">Recent Captures</div>
+    <ul id="recent">
+      <!-- Mapped via JS -->
+    </ul>
   </div>
-
-  <div style="margin-top:12px">
-    <button id="force">⚡ Force capture current tab</button>
-  </div>
-
-  <h4>Recent (local)</h4>
-  <ul id="recent"></ul>
 
   <script src="popup.js"></script>
 </body>

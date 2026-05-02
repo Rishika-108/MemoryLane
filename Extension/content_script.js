@@ -77,11 +77,35 @@
     return Math.round(score);
   }
 
+  // --- AUTH BRIDGE ---
+  
+  function checkAuthBridge() {
+    // If we are on the Memory Lane web app, try to grab the token
+    if (location.hostname === 'localhost' || location.hostname.includes('memory-lane')) {
+      console.log('[MemoryLane] On app domain, requesting session bridge...');
+      window.postMessage({ type: "REQUEST_TOKEN" }, "*");
+    }
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+    if (event.data.type === "TOKEN_RESPONSE" && event.data.token) {
+      console.log('[MemoryLane] Session token received, bridging to extension storage.');
+      chrome.runtime.sendMessage({ 
+        type: "SET_SESSION", 
+        token: event.data.token 
+      });
+    }
+  });
+
+  // Initial check
+  checkAuthBridge();
+
   // --- CORE LOGIC ---
 
   function capture(reason) {
     const content = getCleanContent();
-    if (content.length < CONFIG.CONTENT_MIN_LENGTH && reason !== 'manual') {
+    if (content.length < CONFIG.CONTENT_MIN_LENGTH && reason !== 'manual-shortcut' && reason !== 'manual-button') {
       console.log('Skipping capture: content too short');
       return;
     }
@@ -101,7 +125,8 @@
       reason,
     };
 
-    chrome.runtime.sendMessage({ type: 'CAPTURE_EVENT', payload });
+    // Use 'capture_light' to match background.js listener
+    chrome.runtime.sendMessage({ type: 'capture_light', payload });
     console.log(`[MemoryLane] Captured (${reason}) with score: ${payload.engagement.score}`);
     hasAutoCaptured = true;
   }
