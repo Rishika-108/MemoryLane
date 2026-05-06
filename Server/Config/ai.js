@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 import CapturedContent from "../Models/contentModel.js";
 import fetch from "node-fetch";
 
+const GEMINI_KEYS = [
+  process.env.GEMINI_KEY_1,
+  process.env.GEMINI_KEY_2,
+  process.env.GEMINI_KEY_3,
+  process.env.GEMINI_KEY_4,
+  process.env.GEMINI_KEY_5,
+];
+
 export const generateEmbedding = async (text) => {
   try {
     const AI_KEY = process.env.GEMINI_API_KEY  // Keep fallback for test execution
@@ -27,12 +35,10 @@ export const generateEmbedding = async (text) => {
 
 export const generateAIForContent = async (id, userId) => {
   try {
-    // 1️⃣ Validate ObjectId (skip if just internal, but good for safety)
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new Error("Invalid content ID.");
     }
 
-    // 2️⃣ Fetch user content
     const content = await CapturedContent.findOne({ _id: id, userId });
     if (!content) {
       throw new Error("Content not found or unauthorized.");
@@ -43,10 +49,9 @@ export const generateAIForContent = async (id, userId) => {
       throw new Error("Content has no text to analyze.");
     }
 
-    // 3️⃣ Prepare Gemini prompt
     const AI_KEY = process.env.GEMINI_API_KEY;
-    if (!AI_KEY) {
-      throw new Error("Missing Gemini API key in environment variables.");
+    if (!AI_KEY && GEMINI_KEYS.length === 0) {
+      throw new Error("Missing Gemini API keys in environment variables.");
     }
 
     const promptText = `
@@ -85,8 +90,6 @@ ${content.content ? content.content.slice(0, 15000) : "No content provided"}
 ---
 `;
 
-
-
     const payload = {
       contents: [
         {
@@ -96,18 +99,45 @@ ${content.content ? content.content.slice(0, 15000) : "No content provided"}
       ],
     };
 
-    // 4️⃣ Call Gemini API
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    // 4️⃣ Call Gemini API with fallback keys
+    let rawText = "";
+    let lastError = null;
 
-    const rawText = await response.text();
-    console.log("🔍 Gemini raw response:\n", rawText);
+    for (let i = 0; i < GEMINI_KEYS.length; i++) {
+      const key = GEMINI_KEYS[i];
+
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (response.status === 429) {
+          console.warn(`⚠️ Gemini key ${i + 1} rate-limited`);
+          continue;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        rawText = await response.text();
+        console.log(`🔍 Gemini response (key ${i + 1}):\n`, rawText);
+        break;
+
+      } catch (err) {
+        lastError = err;
+        console.warn(`❌ Gemini key ${i + 1} failed:`, err.message);
+      }
+    }
+
+    if (!rawText) {
+      throw new Error("All Gemini keys exhausted or failed.");
+    }
 
     // 5️⃣ Parse Gemini response safely
     let aiResult = {};
@@ -115,7 +145,6 @@ ${content.content ? content.content.slice(0, 15000) : "No content provided"}
       const result = JSON.parse(rawText);
       const textResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-      // Extract JSON object from Gemini text output
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         aiResult = JSON.parse(jsonMatch[0]);
@@ -136,11 +165,9 @@ ${content.content ? content.content.slice(0, 15000) : "No content provided"}
       category: aiResult.category || "",
     };
 
-    // 6.5️⃣ Generate Atlas Vector Search Embedding
     const textToEmbed = `Title: ${content.title}. Summary: ${aiResult.summary || ""} Tags: ${(aiResult.tags || []).join(", ")}`;
     content.embedding = await generateEmbedding(textToEmbed);
 
-    // 7️⃣ Mark as processed and save
     content.status = "processed";
     await content.save();
 
