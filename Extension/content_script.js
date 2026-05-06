@@ -81,8 +81,12 @@
   
   function checkAuthBridge() {
     // If we are on the Memory Lane web app, try to grab the token
-    if (location.hostname === 'localhost' || location.hostname.includes('memory-lane')) {
-      console.log('[MemoryLane] On app domain, requesting session bridge...');
+    const isAppDomain = location.hostname === 'localhost' || 
+                        location.hostname === '127.0.0.1' || 
+                        location.hostname.includes('memory-lane');
+                        
+    if (isAppDomain) {
+      console.log('[MemoryLane] App domain detected. Requesting token bridge...');
       window.postMessage({ type: "REQUEST_TOKEN" }, "*");
     }
   }
@@ -90,7 +94,7 @@
   window.addEventListener("message", (event) => {
     if (event.source !== window) return;
     if (event.data.type === "TOKEN_RESPONSE" && event.data.token) {
-      console.log('[MemoryLane] Session token received, bridging to extension storage.');
+      console.log('[MemoryLane] Session token received. Syncing with extension...');
       chrome.runtime.sendMessage({ 
         type: "SET_SESSION", 
         token: event.data.token 
@@ -98,8 +102,11 @@
     }
   });
 
-  // Initial check
+  // Check on load and every few seconds while on the app page to catch late logins
   checkAuthBridge();
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    setInterval(checkAuthBridge, 10000);
+  }
 
   // --- CORE LOGIC ---
 

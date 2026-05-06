@@ -11,6 +11,6 @@ contentRouter.post('/save', authMiddleware, saveCapturedData);
 contentRouter.get('/getContent', authMiddleware, getUserContent);
 contentRouter.post('/search', authMiddleware, searchContent);
 contentRouter.get('/analytics', authMiddleware, getUserAnalytics);
-contentRouter.get('/:id/analyze', authMiddleware, analyzeContent);
+contentRouter.post('/analyze/:id', authMiddleware, analyzeContent);
 
 export default contentRouter;

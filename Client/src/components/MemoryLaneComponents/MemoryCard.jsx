@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 
 const MemoryCard = ({ memory, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Pick emotion color
   const emotionColorMap = {
@@ -39,11 +40,54 @@ const MemoryCard = ({ memory, onClick }) => {
       "
     >
       {/* Dynamic Emotion Badge (Top Right) */}
-      {memory.aiData?.emotion && (
-        <div className={`absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-full border shadow-sm ${emotionClass}`}>
-          {memory.aiData.emotion}
-        </div>
-      )}
+      <div className="absolute top-4 right-4 flex gap-2 items-center">
+        {memory.aiData?.emotion && (
+          <div className={`px-3 py-1 text-xs font-semibold rounded-full border shadow-sm ${emotionClass}`}>
+            {memory.aiData.emotion}
+          </div>
+        )}
+        
+        {/* Manual AI Trigger Button */}
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (isAnalyzing) return;
+            setIsAnalyzing(true);
+            try {
+              const token = localStorage.getItem("token");
+              const res = await fetch(`http://localhost:5000/api/content/analyze/${memory._id || memory.id}`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              const data = await res.json();
+              if (res.ok) {
+                // Refresh the memory data in place or notify parent
+                window.location.reload(); // Simple approach: refresh to show new AI data
+              } else {
+                alert(data.message || "AI Analysis failed.");
+              }
+            } catch (err) {
+              console.error("Manual Analysis error:", err);
+            } finally {
+              setIsAnalyzing(false);
+            }
+          }}
+          className={`
+            p-1.5 rounded-full border border-slate-700/50 
+            bg-slate-900/50 hover:bg-purple-500/20 hover:border-purple-500/50 
+            transition-all group/btn
+            ${isAnalyzing ? "animate-pulse" : ""}
+          `}
+          title="Regenerate AI Summary"
+        >
+          <svg 
+            className={`w-4 h-4 ${isAnalyzing ? "text-purple-400" : "text-slate-400 group-hover/btn:text-purple-400"}`} 
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </button>
+      </div>
 
       {/* Gradient Accent Bar */}
       <div className={`
@@ -74,7 +118,7 @@ const MemoryCard = ({ memory, onClick }) => {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4 mt-auto">
-          {memory.aiData?.tags?.slice(0, 3).map((tag) => (
+          {(memory.aiData?.tags || []).slice(0, 3).map((tag) => (
             <span
               key={tag}
               className="

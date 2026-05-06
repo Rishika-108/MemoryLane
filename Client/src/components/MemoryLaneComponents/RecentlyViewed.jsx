@@ -37,7 +37,7 @@ const RecentlyViewed = ({ memories, onClick, isLoading }) => {
         <AnimatePresence>
           {memories.map((m, idx) => (
             <motion.div
-              key={m.id}
+              key={m._id || m.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1 }}
@@ -53,7 +53,7 @@ const RecentlyViewed = ({ memories, onClick, isLoading }) => {
                 relative overflow-hidden
                 transition-all duration-300
               "
-              onClick={() => onClick(m.id)}
+              onClick={() => onClick(m._id || m.id)}
             >
               {/* Top Gradient Bar */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
@@ -61,12 +61,12 @@ const RecentlyViewed = ({ memories, onClick, isLoading }) => {
               {/* Content */}
               <div className="relative z-10">
                 <p className="font-semibold text-gray-900 mb-3 text-lg leading-snug line-clamp-2">
-                  {m.summary}
+                  {m.aiData?.summary || m.title || "No summary available"}
                 </p>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {m.tags.slice(0, 3).map((tag) => (
+                  {(m.aiData?.tags || []).slice(0, 3).map((tag) => (
                     <span
                       key={tag}
                       className="px-3 py-1 rounded-full text-xs font-medium

@@ -26,23 +26,31 @@ async function handleLightCapture(payload, tab) {
 
     const tabId = tab?.id;
     const now = Date.now();
-    if (tabId) {
+    const isManual = payload.reason === 'manual-button' || payload.reason === 'manual-shortcut';
+
+    if (tabId && !isManual) {
       const last = lastCaptureAt[tabId] || 0;
       if (now - last < CAPTURE_INTERVAL_MS) {
-        console.log("⏱ Skipping capture due to throttle");
+        console.log("⏱ Skipping auto-capture due to throttle");
         return;
       }
       lastCaptureAt[tabId] = now;
     }
 
     // 🧩 Get stored user data
-    const { userId, token } = await new Promise((resolve) => {
-      chrome.storage.local.get(["userId", "token"], resolve);
+    const { token } = await new Promise((resolve) => {
+      chrome.storage.local.get(["token"], resolve);
     });
-    console.log("🧠 Got userId/token:", userId, !!token);
 
-    if (!userId && !token) {
-      console.warn("⚠️ No userId or token found in chrome.storage.local. Capture aborted.");
+    if (!token) {
+      console.warn("⚠️ No token found. Capture aborted.");
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icon128.png',
+        title: 'Memory Lane: Login Required',
+        message: 'Please open your Memory Lane vault once to link the extension.'
+      });
+      chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: 'Please log in to the website first.' });
       return;
     }
 
@@ -52,29 +60,36 @@ async function handleLightCapture(payload, tab) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
         url: payload.url,
         title: payload.title,
+        content: payload.content,
         reason: payload.reason,
         timestamp: payload.timestamp,
-        userId,
       }),
     });
-
-    console.log("📡 Fetch sent to backend:", BACKEND_URL);
 
     const result = await response.json().catch(() => ({}));
     console.log("✅ Backend response:", result);
 
-    if (response.ok && result?.id) {
-       console.log("✨ Capture and analysis completed successfully!", result.aiData);
+    if (response.ok && result?.ok) {
+       console.log("✨ Capture successful!");
+       chrome.runtime.sendMessage({ type: 'local_capture_saved', payload: result });
     } else {
-       console.warn("⚠️ Capture failed or returned unexpected data:", result);
+       console.warn("⚠️ Capture failed:", result);
+       chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: result.message || 'Server error' });
     }
 
   } catch (e) {
     console.error("❌ handleLightCapture error", e);
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon128.png',
+      title: 'Memory Lane: Error',
+      message: 'Failed to connect to the vault server. Is it running?'
+    });
+    chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: 'Network error or server offline' });
   }
 }

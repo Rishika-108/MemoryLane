@@ -63,6 +63,29 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
+  // Memory operations
+  const fetchMemories = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/content/getContent", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (response.ok) {
+        setMemories(result.data || []);
+      } else {
+        console.error("Failed to fetch memories:", result.message);
+      }
+    } catch (err) {
+      console.error("Network error fetching memories:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Load user data and recently viewed on mount
   useEffect(() => {
     if (AUTO_LOGOUT_ON_REFRESH) {
@@ -98,6 +121,13 @@ export const AppProvider = ({ children }) => {
       }
     }
   }, []);
+
+  // Fetch memories when user logs in
+  useEffect(() => {
+    if (user.isLoggedIn) {
+      fetchMemories();
+    }
+  }, [user.isLoggedIn, fetchMemories]);
 
   // Memory operations
   const addMemory = useCallback((memory) => {

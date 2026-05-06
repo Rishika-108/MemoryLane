@@ -13,6 +13,7 @@ const capturedContentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   url: { type: String, required: true },
   title: { type: String, default: "" },
+  content: { type: String, default: "" }, // Store raw extracted text
   type: { type: String, enum: ["article", "video"],  default: "article"  },
   timestamp: { type: Date, default: Date.now},
   status: { type: String, enum: ["raw", "processing", "processed", "error"], default: "raw"},

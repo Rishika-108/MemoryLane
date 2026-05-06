@@ -11,10 +11,14 @@ export const searchContent = async (req, res) => {
     if (semanticQuery && semanticQuery.trim() !== "") {
       const queryEmbedding = await generateEmbedding(semanticQuery.trim());
       
+      if (!queryEmbedding || queryEmbedding.length === 0) {
+        return res.status(200).json({ count: 0, data: [], message: "Could not generate AI embedding for search." });
+      }
+
       const pipeline = [
         {
           $vectorSearch: {
-            index: "vector_index", // Must match your Atlas App Services Vector Index name exactly
+            index: "vector_index", 
             path: "embedding",
             queryVector: queryEmbedding,
             numCandidates: 100, 

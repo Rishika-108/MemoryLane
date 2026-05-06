@@ -134,30 +134,62 @@ function updateConnectionStatus(token) {
   }
 }
 
+// Helper to check if we can actually run scripts on this tab
+function isSafeTab(url) {
+  return url && !url.startsWith('chrome://') && !url.startsWith('edge://') && !url.startsWith('about:') && !url.startsWith('view-source:');
+}
+
 // 🔐 Step 2: Request JWT from the webpage via content script
 async function fetchToken() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return;
+  if (!tab || !isSafeTab(tab.url)) {
+    // If we can't talk to the tab, just load what we have in storage
+    chrome.storage.local.get("token", (res) => {
+      updateConnectionStatus(res.token);
+    });
+    return;
+  }
 
-  chrome.tabs.sendMessage(tab.id, { type: "REQUEST_TOKEN" }, (response) => {
-    const token = response?.token;
-    if (token) {
-      chrome.storage.local.set({ token });
-      updateConnectionStatus(token);
-      console.log("✅ Token found via tab bridge");
-    } else {
-      // Check if we already have it stored
-      chrome.storage.local.get("token", (res) => {
-        updateConnectionStatus(res.token);
-      });
-    }
-  });
+  try {
+    chrome.tabs.sendMessage(tab.id, { type: "REQUEST_TOKEN" }, (response) => {
+      // Check for 'Receiving end does not exist' error
+      if (chrome.runtime.lastError) {
+        console.warn("⚠️ Content script not loaded on this tab yet. Refresh the page.");
+        chrome.storage.local.get("token", (res) => {
+          updateConnectionStatus(res.token);
+        });
+        return;
+      }
+
+      const token = response?.token;
+      if (token) {
+        chrome.storage.local.set({ token });
+        updateConnectionStatus(token);
+        console.log("✅ Token found via tab bridge");
+      } else {
+        chrome.storage.local.get("token", (res) => {
+          updateConnectionStatus(res.token);
+        });
+      }
+    });
+  } catch (err) {
+    console.error("Popup fetchToken error:", err);
+  }
 }
 
 // Bookmark / force capture button
 forceBtn.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return;
+  
+  if (!tab || !isSafeTab(tab.url)) {
+    forceBtn.innerHTML = "Cannot capture here";
+    forceBtn.style.background = "#ef4444";
+    setTimeout(() => {
+      forceBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Capture Tab';
+      forceBtn.style.background = "";
+    }, 2000);
+    return;
+  }
 
   const originalContent = forceBtn.innerHTML;
   forceBtn.innerHTML = `
@@ -231,5 +263,21 @@ chrome.storage.local.get({ recentCaptures: [], token: null }, (res) => {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'local_capture_saved') {
     chrome.storage.local.get({ recentCaptures: [] }, (res) => renderRecent(res.recentCaptures));
+  } else if (msg?.type === 'CAPTURE_FAILED') {
+    forceBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      Error
+    `;
+    forceBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+    console.error("❌ Capture failed:", msg.error);
+    
+    setTimeout(() => {
+       forceBtn.innerHTML = `
+         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+         Capture Tab
+       `;
+       forceBtn.style.background = "";
+       forceBtn.disabled = false;
+    }, 3000);
   }
 });

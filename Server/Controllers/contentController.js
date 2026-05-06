@@ -3,7 +3,7 @@ import CapturedContent from "../Models/contentModel.js";
 
 export const saveCapturedData = async (req, res) => {
   try {
-    const { url, title, type, aiData } = req.body;
+    const { url, title, type, content, aiData } = req.body;
     const userId = req.user.id || req.user._id;
 
     if (!url) {
@@ -36,6 +36,7 @@ export const saveCapturedData = async (req, res) => {
         userId,
         url,
         title,
+        content, // Save raw text
         type,
         status: "processing", // Setting status explicitly
         aiData: aiData || {},

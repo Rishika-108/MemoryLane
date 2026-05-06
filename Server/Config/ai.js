@@ -38,7 +38,7 @@ export const generateAIForContent = async (id, userId) => {
       throw new Error("Content not found or unauthorized.");
     }
 
-    const textToAnalyze = `${content.title}\n${content.url || ""}`.trim();
+    const textToAnalyze = `${content.title}\n${content.content || ""}`.trim();
     if (!textToAnalyze) {
       throw new Error("Content has no text to analyze.");
     }
@@ -46,48 +46,43 @@ export const generateAIForContent = async (id, userId) => {
     // 3️⃣ Prepare Gemini prompt
     const AI_KEY = process.env.GEMINI_API_KEY;
     if (!AI_KEY) {
-      return res.status(500).json({ message: "Missing Gemini API key in environment variables." });
+      throw new Error("Missing Gemini API key in environment variables.");
     }
 
     const promptText = `
-You are a powerful content analysis assistant. You are given a title and a URL. 
-Your task is to analyze the content behind the URL (article, post, tweet, video, or blog) 
-and generate a detailed, structured JSON output. 
+You are a powerful content analysis assistant. You are given a title and the raw text content of a webpage. 
+Your task is to analyze the text and generate a detailed, structured JSON output. 
 
 Follow these instructions exactly:
 
 1. Summarization:
-   Condense the captured content into 2–3 sentences that preserve the core meaning. 
-   If it is a video, use the title/description and infer the key points.
+   Condense the text into 2–3 sentences that preserve the core meaning. 
 
 2. Sentiment & Emotion Analysis:
    Detect the overall sentiment (positive, neutral, negative) and the emotional tone (e.g., inspiring, informative, funny, stressful).
 
 3. Topic Tagging & Categorization:
-   Automatically assign 3–5 relevant tags or categories that describe the main topics or themes (e.g., AI, Startups, Mental Health, Productivity, Education).
+   Automatically assign 3–5 relevant tags or categories that describe the main topics or themes.
 
 4. Content Type Identification:
-   Identify the content type:
-   - Article
-   - News piece
-   - Tweet / social post
-   - Video (transcript)
-   - Blog / opinion piece
-   - Research / educational material
+   Identify the content type: Article, News, Tweet, Video (if transcript provided), Blog, or Research.
 
 Return ONLY a single JSON object with the following structure:
 
 {
-  "summary": "2–3 sentence concise summary of the content",
+  "summary": "2–3 sentence concise summary",
   "sentiment": "positive | neutral | negative",
-  "emotion": "underlying emotional tone (e.g., inspiring, funny, informative, stressful)",
-  "tags": ["3–5 relevant keywords or topics"],
-  "category": "main content category (1–2 words)",
+  "emotion": "emotional tone",
+  "tags": ["3–5 keywords"],
+  "category": "main category",
   "contentType": "Article | News | Tweet | Video | Blog | Research"
 }
 
 Title: "${content.title}"
-URL: "${content.url}"
+Raw Text Content:
+---
+${content.content ? content.content.slice(0, 15000) : "No content provided"}
+---
 `;
 
 
@@ -103,7 +98,7 @@ URL: "${content.url}"
 
     // 4️⃣ Call Gemini API
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${AI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
