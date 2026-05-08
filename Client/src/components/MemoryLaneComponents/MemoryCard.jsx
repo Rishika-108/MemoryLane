@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useAppContext } from "../../AppContext";
 
 const MemoryCard = ({ memory, onClick }) => {
+  const { updateMemory } = useAppContext();
   const [isHovered, setIsHovered] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -61,8 +63,8 @@ const MemoryCard = ({ memory, onClick }) => {
               });
               const data = await res.json();
               if (res.ok) {
-                // Refresh the memory data in place or notify parent
-                window.location.reload(); // Simple approach: refresh to show new AI data
+                // Update the memory data in place
+                updateMemory(memory._id || memory.id, { aiData: data.aiData });
               } else {
                 alert(data.message || "AI Analysis failed.");
               }

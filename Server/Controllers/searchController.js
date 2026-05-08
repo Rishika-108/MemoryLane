@@ -1,5 +1,5 @@
 import CapturedContent from "../Models/contentModel.js";
-import { generateEmbedding } from "../Config/ai.js";
+import { generateHFEmbedding } from "../Services/aiService.js";
 import mongoose from "mongoose";
 
 export const searchContent = async (req, res) => {
@@ -9,8 +9,8 @@ export const searchContent = async (req, res) => {
 
     // --- Vector Search Execution ---
     if (semanticQuery && semanticQuery.trim() !== "") {
-      const queryEmbedding = await generateEmbedding(semanticQuery.trim());
-      
+      const queryEmbedding = await generateHFEmbedding(semanticQuery.trim());
+
       if (!queryEmbedding || queryEmbedding.length === 0) {
         return res.status(200).json({ count: 0, data: [], message: "Could not generate AI embedding for search." });
       }
@@ -18,10 +18,10 @@ export const searchContent = async (req, res) => {
       const pipeline = [
         {
           $vectorSearch: {
-            index: "vector_index", 
+            index: "vector_index",
             path: "embedding",
             queryVector: queryEmbedding,
-            numCandidates: 100, 
+            numCandidates: 100,
             limit: 20
           }
         }
@@ -29,7 +29,7 @@ export const searchContent = async (req, res) => {
 
       // Add $match to filter securely by user and additional metrics
       const matchFilter = { userId: new mongoose.Types.ObjectId(userId) };
-      
+
       if (tag && tag.trim() !== "") matchFilter["aiData.tags"] = { $in: [tag.trim()] };
       if (mood && mood.trim() !== "") matchFilter["aiData.sentiment"] = mood.trim();
       if (startDate || endDate) {

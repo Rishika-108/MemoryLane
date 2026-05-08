@@ -3,10 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import Home from "./Pages/Home";
-import Dashboard from "./Pages/Dashboard";
 import MemoryLane from "./Pages/MemoryLane";
 import AnimatedBackground from "./Components/AnimatedBackground";
 import { useAppContext } from "./AppContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -45,14 +46,6 @@ const App = () => {
 
           {/* Protected Routes */}
           <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/memorylane"
             element={
               <ProtectedRoute>
@@ -66,6 +59,7 @@ const App = () => {
         </Routes>
         <Footer />
       </div>
+      <ToastContainer position="bottom-right" theme="dark" />
     </Router>
   );
 };

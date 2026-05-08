@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { toast } from "react-toastify";
 
 const AppContext = createContext();
 
@@ -76,6 +77,10 @@ export const AppProvider = ({ children }) => {
       const result = await response.json();
       if (response.ok) {
         setMemories(result.data || []);
+      } else if (response.status === 401) {
+        // Token expired or invalid
+        toast.error("Session expired. Please login again.");
+        logout();
       } else {
         console.error("Failed to fetch memories:", result.message);
       }
@@ -100,11 +105,15 @@ export const AppProvider = ({ children }) => {
       // Load persisted user data
       try {
         const savedUser = localStorage.getItem("userData");
-        if (savedUser) {
+        const token = localStorage.getItem("token");
+        if (savedUser && token) {
           const userData = JSON.parse(savedUser);
           if (userData.isLoggedIn) {
             setUser(userData);
           }
+        } else {
+          // If token is missing but userData exists, or vice versa, clear everything
+          logout();
         }
       } catch (e) {
         console.error("Failed to load user data:", e);

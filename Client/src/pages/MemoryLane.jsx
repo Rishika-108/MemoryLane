@@ -48,36 +48,12 @@ class MemoryLaneErrorBoundary extends React.Component {
 }
 
 const MemoryLane = () => {
-  const { recentlyViewed, markRecentlyViewed } = useAppContext();
+  const { memories, isLoading: contextLoading, recentlyViewed, markRecentlyViewed, logout } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
-  const [allMemories, setAllMemories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch memories from backend once
-  useEffect(() => {
-    const fetchMemories = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/content/getContent", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        const data = await res.json();
-        setAllMemories(data.data || []);
-      } catch (err) {
-        console.error("Error fetching memories:", err);
-        setError(err.message || "Failed to load memories.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchMemories();
-  }, []);
+  const combinedLoading = contextLoading || isLoading;
 
   const [searchMode, setSearchMode] = useState("keyword");
   const [searchResults, setSearchResults] = useState([]);
@@ -109,13 +85,18 @@ const MemoryLane = () => {
         body: JSON.stringify(payload)
       });
 
+      if (res.status === 401) {
+        logout();
+        throw new Error("Session expired. Please login again.");
+      }
+
       if (!res.ok) throw new Error("Search configuration failed.");
       
       const data = await res.json();
       setSearchResults(data.data || []);
     } catch (err) {
       console.error("Search failed:", err);
-      setError("Failed to execute search query.");
+      setError(err.message || "Failed to execute search query.");
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +139,7 @@ const MemoryLane = () => {
           </motion.div>
           
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
-             {!hasSearched && allMemories.length > 0 && <Timeline memories={allMemories} />}
+             {!hasSearched && memories.length > 0 && <Timeline memories={memories} />}
           </motion.div>
 
           {/* Recently Viewed Section */}
@@ -179,7 +160,7 @@ const MemoryLane = () => {
           {/* Main Content Area */}
           <div className="flex-1 mt-6">
             <AnimatePresence mode="wait">
-              {isLoading ? (
+              {combinedLoading ? (
                 // Loading Skeleton
                 <motion.div
                   key="skeleton"
@@ -234,7 +215,7 @@ const MemoryLane = () => {
                         Found <span className="text-purple-400 font-semibold">{searchResults.length}</span> {searchResults.length === 1 ? 'result' : 'results'}
                       </p>
                     </div>
-                    <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} isLoading={isLoading} error={error}/>
+                    <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error}/>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -256,7 +237,7 @@ const MemoryLane = () => {
                     <p className="text-gray-500 text-sm mt-2">Try different search terms or toggle semantic search</p>
                   </motion.div>
                 )
-              ) : allMemories.length > 0 ? (
+              ) : memories.length > 0 ? (
                 // All Memories Grid
                 <motion.div
                   key="all-memories"
@@ -266,10 +247,10 @@ const MemoryLane = () => {
                 >
                   <div className="mb-4">
                     <p className="text-gray-400">
-                      Showing <span className="text-purple-400 font-semibold">{allMemories.length}</span> {allMemories.length === 1 ? 'memory' : 'memories'}
+                      Showing <span className="text-purple-400 font-semibold">{memories.length}</span> {memories.length === 1 ? 'memory' : 'memories'}
                     </p>
                   </div>
-                  <MemoryGrid memories={allMemories} onClick={markRecentlyViewed} isLoading={isLoading} error={error} />
+                  <MemoryGrid memories={memories} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error} />
                 </motion.div>
               ) : (
                 // Empty State

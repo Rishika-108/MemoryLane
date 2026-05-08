@@ -55,9 +55,8 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Right Illustration */}
         <div className="relative w-full max-w-lg md:max-w-xl">
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden relative z-10">
+          <div className="bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl shadow-purple-500/10 overflow-hidden relative z-10">
             {/* Animated Lottie */}
             <Lottie animationData={memoryFlowAnimation} loop={true} />
             <div className="absolute -bottom-4 -right-4 bg-purple-500/20 backdrop-blur-md border border-purple-500/30 px-4 py-1 rounded-full text-sm font-medium text-purple-300 shadow-md">

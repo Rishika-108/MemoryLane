@@ -54,18 +54,39 @@
     return meta;
   }
 
+  function getDeepText(node) {
+    let text = "";
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      // Skip unwanted elements
+      const tag = node.tagName.toLowerCase();
+      if (['script', 'style', 'nav', 'footer', 'header', 'iframe', 'noscript'].includes(tag)) return "";
+      if (node.classList.contains('ads') || node.classList.contains('sidebar')) return "";
+
+      if (node.shadowRoot) {
+        for (let child of node.shadowRoot.childNodes) {
+          text += getDeepText(child);
+        }
+      }
+      for (let child of node.childNodes) {
+        text += getDeepText(child);
+      }
+    }
+    return text;
+  }
+
   function getCleanContent() {
-    // Try to find the most relevant content block
+    // 1. Try to find the most relevant content block first
     const article = document.querySelector('article');
     const main = document.querySelector('main, [role="main"], .main-content, #main-content');
     
     let container = article || main || document.body;
     
-    // Simple cleaning: remove scripts, styles, and hidden elements
-    const clone = container.cloneNode(true);
-    clone.querySelectorAll('script, style, nav, footer, header, .ads, .sidebar').forEach(el => el.remove());
+    // 2. Use Deep Extraction to find text hidden in Shadow Roots (YouTube/Social Media)
+    let rawText = getDeepText(container);
     
-    return clone.innerText.trim().slice(0, 30000);
+    // 3. Final cleaning: collapse whitespace and trim
+    return rawText.replace(/\s+/g, " ").trim().slice(0, 50000);
   }
 
   function calculateEngagementScore() {
