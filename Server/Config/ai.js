@@ -113,6 +113,15 @@ ${content.content ? content.content.slice(0, 15000) : "No content provided"}
     let aiResult = {};
     try {
       const result = JSON.parse(rawText);
+      
+      // Handle API level errors (Rate limits, etc)
+      if (result.error) {
+        if (result.error.code === 429) {
+          throw new Error("AI Rate Limit: You've exceeded the Gemini Free Tier quota. Please wait a minute before trying again.");
+        }
+        throw new Error(`Gemini API Error: ${result.error.message}`);
+      }
+
       const textResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
       // Extract JSON object from Gemini text output
