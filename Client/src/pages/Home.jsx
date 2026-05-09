@@ -1,8 +1,8 @@
 import React from "react";
-import HeroSection from "../Components/HomeComponents/Hero";
-import FeatureHighlights from "../Components/HomeComponents/FeatureHighlights";
-import RecentMemories from "../Components/HomeComponents/RecentMemories";
-import CTASection from "../Components/HomeComponents/CTASection";
+import HeroSection from "../components/HomeComponents/Hero";
+import FeatureHighlights from "../components/HomeComponents/FeatureHighlights";
+import RecentMemories from "../components/HomeComponents/RecentMemories";
+import CTASection from "../components/HomeComponents/CTASection";
 import { useAppContext } from "../AppContext";
 
 const Home = () => {

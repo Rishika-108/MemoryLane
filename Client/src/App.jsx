@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Header from "./Components/Header";
-import Footer from "./Components/Footer";
-import Home from "./Pages/Home";
-import MemoryLane from "./Pages/MemoryLane";
-import AnimatedBackground from "./Components/AnimatedBackground";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import MemoryLane from "./pages/MemoryLane";
+import AnimatedBackground from "./components/AnimatedBackground";
 import { useAppContext } from "./AppContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

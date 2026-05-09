@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "../AppContext";
-import SearchBar from "../Components/MemoryLaneComponents/SearchBar";
-import MemoryGrid from "../Components/MemoryLaneComponents/MemoryGrid";
-import RecentlyViewed from "../Components/MemoryLaneComponents/RecentlyViewed";
-import Timeline from "../Components/MemoryLaneComponents/Timeline";
+import SearchBar from "../components/MemoryLaneComponents/SearchBar";
+import MemoryGrid from "../components/MemoryLaneComponents/MemoryGrid";
+import RecentlyViewed from "../components/MemoryLaneComponents/RecentlyViewed";
+import Timeline from "../components/MemoryLaneComponents/Timeline";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Error Boundary for MemoryLane
