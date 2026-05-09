@@ -50,8 +50,15 @@ export const generateAIForContent = async (id, userId) => {
           contentType: aiResult.contentType || "",
         };
 
-        // 2️⃣ Generate Embedding using Hugging Face
-        const embeddingText = `Title: ${content.title}\n\nSummary: ${aiResult.summary || ""}`;
+        // 2️⃣ Generate Embedding using Local Transformer
+        // Include more context in the embedding for better relevance
+        const embeddingText = `
+          Title: ${content.title}
+          Summary: ${aiResult.summary || ""}
+          Category: ${aiResult.category || ""}
+          Emotion: ${aiResult.emotion || ""}
+          Tags: ${(aiResult.tags || []).join(", ")}
+        `.trim();
         content.embedding = await generateHFEmbedding(embeddingText);
 
         content.status = "processed";

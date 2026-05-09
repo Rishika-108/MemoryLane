@@ -8,8 +8,12 @@ export const searchContent = async (req, res) => {
     const { keyword, tag, mood, startDate, endDate, semanticQuery } = req.body;
 
     // --- Vector Search Execution ---
-    if (semanticQuery && semanticQuery.trim() !== "") {
-      const queryEmbedding = await generateHFEmbedding(semanticQuery.trim());
+    const isSemantic = semanticQuery && semanticQuery.trim() !== "";
+    const isEmotionSearch = mood && mood.trim() !== "";
+
+    if (isSemantic || isEmotionSearch) {
+      const actualQuery = isSemantic ? semanticQuery.trim() : `Emotion: ${mood.trim()}`;
+      const queryEmbedding = await generateHFEmbedding(actualQuery);
 
       if (!queryEmbedding || queryEmbedding.length === 0) {
         return res.status(200).json({ count: 0, data: [], message: "Could not generate AI embedding for search." });
@@ -24,6 +28,19 @@ export const searchContent = async (req, res) => {
             numCandidates: 100,
             limit: 20
           }
+        },
+        {
+          $set: {
+            score: { $meta: "vectorSearchScore" }
+          }
+        },
+        {
+          $match: {
+            score: { $gt: 0.6 } // Threshold to filter out irrelevant results
+          }
+        },
+        {
+          $sort: { score: -1 }
         }
       ];
 
@@ -32,7 +49,9 @@ export const searchContent = async (req, res) => {
 
       if (tag && tag.trim() !== "") matchFilter["aiData.tags"] = { $in: [tag.trim()] };
       
-      if (mood && mood.trim() !== "") {
+      // If it's a semantic search but NOT explicitly an emotion search, 
+      // we can still apply the mood filter if the user provided one in addition to the semantic query.
+      if (!isEmotionSearch && mood && mood.trim() !== "") {
         const moodVal = mood.trim();
         matchFilter.$or = [
           { "aiData.sentiment": { $regex: moodVal, $options: "i" } },
