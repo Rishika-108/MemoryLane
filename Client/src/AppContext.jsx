@@ -71,7 +71,7 @@ export const AppProvider = ({ children }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/content/getContent", {
+      const response = await fetch("https://memorylane-ii2w.onrender.com/api/content/getContent", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -91,11 +91,31 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
+  // Helper to check if token is expired
+  const isTokenExpired = (token) => {
+    try {
+      if (!token) return true;
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const payload = JSON.parse(jsonPayload);
+      const now = Math.floor(Date.now() / 1000);
+      
+      return payload.exp < now;
+    } catch (e) {
+      return true; // If decoding fails, treat as expired
+    }
+  };
+
   // Load user data and recently viewed on mount
   useEffect(() => {
     if (AUTO_LOGOUT_ON_REFRESH) {
       try {
         localStorage.removeItem("userData");
+        localStorage.removeItem("token");
         sessionStorage.removeItem("userData");
       } catch (e) {
         /* ignore */
@@ -106,14 +126,21 @@ export const AppProvider = ({ children }) => {
       try {
         const savedUser = localStorage.getItem("userData");
         const token = localStorage.getItem("token");
+        
         if (savedUser && token) {
-          const userData = JSON.parse(savedUser);
-          if (userData.isLoggedIn) {
-            setUser(userData);
+          if (isTokenExpired(token)) {
+            console.warn("🔐 Session expired. Logging out.");
+            toast.info("Session expired. Please login again.");
+            logout();
+          } else {
+            const userData = JSON.parse(savedUser);
+            if (userData.isLoggedIn) {
+              setUser(userData);
+            }
           }
         } else {
-          // If token is missing but userData exists, or vice versa, clear everything
-          logout();
+          // If token or userData is missing, ensure clean state
+          if (token || savedUser) logout();
         }
       } catch (e) {
         console.error("Failed to load user data:", e);

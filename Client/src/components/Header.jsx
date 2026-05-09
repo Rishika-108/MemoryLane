@@ -22,7 +22,7 @@ const Header = () => {
   const [authMode, setAuthMode] = useState("login"); // 'login' or 'register'
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const location = useLocation();
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://memorylane-ii2w.onrender.com";
 
 
   useEffect(() => {
@@ -165,7 +165,7 @@ const Header = () => {
           ) : (
             <button
               onClick={() => setShowLoginModal(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-500 hover:to-pink-500 transition shadow-md shadow-purple-500/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-500 hover:to-pink-500 transition shadow-md shadow-purple-500/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
             >
               <FiLogIn size={18} /> Login / Register
             </button>
@@ -184,22 +184,34 @@ const Header = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && user?.isLoggedIn && (
-        <nav className="md:hidden bg-slate-800 shadow-lg flex flex-col gap-2 px-6 py-4 border-b border-slate-700 animate-slideDown backdrop-blur-sm">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className={`hover:text-indigo-400 font-medium transition-all duration-300 ${
-                location.pathname === link.path
-                  ? "text-indigo-400"
-                  : "text-slate-300"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
+      {isMobileMenuOpen && (
+        <nav className="md:hidden bg-slate-800 shadow-lg flex flex-col gap-4 px-6 py-6 border-b border-slate-700 animate-slideDown backdrop-blur-sm">
+          {user?.isLoggedIn ? (
+            navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className={`text-lg font-medium transition-all duration-300 ${
+                  location.pathname === link.path
+                    ? "text-purple-400"
+                    : "text-slate-300"
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))
+          ) : (
+            <button
+              onClick={() => {
+                setShowLoginModal(true);
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg"
             >
-              {link.name}
-            </Link>
-          ))}
+              <FiLogIn size={20} /> Login / Register
+            </button>
+          )}
         </nav>
       )}
 

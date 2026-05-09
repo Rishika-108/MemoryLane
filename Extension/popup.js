@@ -17,7 +17,7 @@
 
 //         // Direct the user to login page in a new tab
 //         chrome.tabs.create({
-//           url: "http://localhost:5173/", // or your actual deployed login route
+//           url: "https://memoryvault-9t8p.onrender.com/", // or your actual deployed login route
 //         });
 //       }
 //     }

@@ -47,6 +47,61 @@ class MemoryLaneErrorBoundary extends React.Component {
   }
 }
 
+const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (totalPages <= 1) return null;
+
+  const getPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2 mt-12 mb-8">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        Previous
+      </button>
+      
+      {getPageNumbers().map((page, idx) => (
+        page === '...' ? (
+          <span key={`dots-${idx}`} className="px-3 py-2 text-gray-600">...</span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-10 h-10 rounded-xl font-medium transition-all ${
+              currentPage === page
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30"
+                : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            {page}
+          </button>
+        )
+      ))}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        Next
+      </button>
+    </div>
+  );
+};
+
 const MemoryLane = () => {
   const { memories, isLoading: contextLoading, recentlyViewed, markRecentlyViewed, logout } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,6 +113,8 @@ const MemoryLane = () => {
   const [searchMode, setSearchMode] = useState("keyword");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // Search execution hitting the backend matching logical modes (Semantic vs DB Matches)
   const executeSearch = async () => {
@@ -70,6 +127,7 @@ const MemoryLane = () => {
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
+    setCurrentPage(1); // Reset to first page on search
     
     try {
       const token = localStorage.getItem("token");
@@ -79,7 +137,7 @@ const MemoryLane = () => {
       else if (searchMode === "emotion") payload.mood = searchTerm;
       else if (searchMode === "semantic") payload.semanticQuery = searchTerm;
 
-      const res = await fetch("http://localhost:5000/api/content/search", {
+      const res = await fetch("https://memorylane-ii2w.onrender.com/api/content/search", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -130,7 +188,10 @@ const MemoryLane = () => {
               searchTerm={searchTerm}
               setSearchTerm={(val) => {
                 setSearchTerm(val);
-                if (!val) setHasSearched(false); // Reset on empty clear
+                if (!val) {
+                  setHasSearched(false);
+                  setCurrentPage(1); // Reset to first page on clear
+                }
               }}
               onSearch={executeSearch}
               searchMode={searchMode}
@@ -215,7 +276,17 @@ const MemoryLane = () => {
                         Found <span className="text-purple-400 font-semibold">{searchResults.length}</span> {searchResults.length === 1 ? 'result' : 'results'}
                       </p>
                     </div>
-                    <MemoryGrid memories={searchResults} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error}/>
+                    <MemoryGrid memories={searchResults.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error}/>
+                    
+                    <Pagination 
+                      totalItems={searchResults.length}
+                      itemsPerPage={itemsPerPage}
+                      currentPage={currentPage}
+                      onPageChange={(page) => {
+                        setCurrentPage(page);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -250,7 +321,17 @@ const MemoryLane = () => {
                       Showing <span className="text-purple-400 font-semibold">{memories.length}</span> {memories.length === 1 ? 'memory' : 'memories'}
                     </p>
                   </div>
-                  <MemoryGrid memories={memories} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error} />
+                  <MemoryGrid memories={memories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)} onClick={markRecentlyViewed} isLoading={combinedLoading} error={error} />
+                  
+                  <Pagination 
+                    totalItems={memories.length}
+                    itemsPerPage={itemsPerPage}
+                    currentPage={currentPage}
+                    onPageChange={(page) => {
+                      setCurrentPage(page);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  />
                 </motion.div>
               ) : (
                 // Empty State

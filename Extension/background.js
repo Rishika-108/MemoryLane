@@ -1,5 +1,5 @@
-const BACKEND_URL = 'http://localhost:5000/api/capture';
-const ANALYZE_URL = 'http://localhost:5000/api/analyze';
+const BACKEND_URL = 'https://memorylane-ii2w.onrender.com/api/capture';
+const ANALYZE_URL = 'https://memorylane-ii2w.onrender.com/api/analyze';
 const lastCaptureAt = {};
 const CAPTURE_INTERVAL_MS = 30_000;
 
