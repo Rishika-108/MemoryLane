@@ -31,7 +31,14 @@ export const searchContent = async (req, res) => {
       const matchFilter = { userId: new mongoose.Types.ObjectId(userId) };
 
       if (tag && tag.trim() !== "") matchFilter["aiData.tags"] = { $in: [tag.trim()] };
-      if (mood && mood.trim() !== "") matchFilter["aiData.sentiment"] = mood.trim();
+      
+      if (mood && mood.trim() !== "") {
+        const moodVal = mood.trim();
+        matchFilter.$or = [
+          { "aiData.sentiment": { $regex: moodVal, $options: "i" } },
+          { "aiData.emotion": { $regex: moodVal, $options: "i" } }
+        ];
+      }
       if (startDate || endDate) {
         matchFilter.timestamp = {};
         if (startDate) matchFilter.timestamp.$gte = new Date(startDate);
@@ -56,7 +63,12 @@ export const searchContent = async (req, res) => {
     }
 
     if (mood && mood.trim() !== "") {
-      query["aiData.sentiment"] = mood.trim();
+      const moodVal = mood.trim();
+      query.$or = query.$or || [];
+      query.$or.push(
+        { "aiData.sentiment": { $regex: moodVal, $options: "i" } },
+        { "aiData.emotion": { $regex: moodVal, $options: "i" } }
+      );
     }
 
 

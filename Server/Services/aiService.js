@@ -1,4 +1,19 @@
 import fetch from "node-fetch";
+import { pipeline } from "@xenova/transformers";
+
+/**
+ * ================================
+ * LOCAL EMBEDDINGS CONFIG
+ * ================================
+ */
+let extractor = null;
+const getExtractor = async () => {
+  if (!extractor) {
+    // Using a 768-dimension model to match the existing MongoDB vector index
+    extractor = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+  }
+  return extractor;
+};
 
 /**
  * ================================
@@ -8,9 +23,6 @@ import fetch from "node-fetch";
 
 // GROQ
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-
-// HUGGING FACE
-const HF_EMBEDDING_MODEL = process.env.HF_EMBEDDING_MODEL || "BAAI/bge-small-en-v1.5";
 
 /**
  * ================================
@@ -56,12 +68,14 @@ export const generateGroqAIAnalysis = async (text) => {
     if (!GROQ_API_KEY) throw new Error("Missing GROQ_API_KEY in environment.");
 
     const prompt = `
-Analyze the following content and return ONLY valid JSON.
+Summarize the following content comprehensively. 
+Provide a concise 2-3 sentence summary that captures the main points, not just a snippet or the heading.
+Return ONLY valid JSON in the following format:
 {
-  "summary": "2-3 sentence concise summary",
+  "summary": "Concise but meaningful summary of the content",
   "sentiment": "positive|neutral|negative",
-  "emotion": "primary tone",
-  "tags": ["tag1", "tag2", "tag3"],
+  "emotion": "primary tone (e.g. Joy, Sadness, Professional, Informative)",
+  "tags": ["relevant-tag1", "relevant-tag2", "relevant-tag3"],
   "category": "main category",
   "contentType": "Article|News|Blog|Tweet|Research|Video"
 }
@@ -115,41 +129,24 @@ ${text}
 
 /**
  * ================================
- * HUGGING FACE EMBEDDINGS
+ * LOCAL TRANSFORMERS EMBEDDINGS
  * ================================
  */
 export const generateHFEmbedding = async (text) => {
-  const HF_API_KEY = process.env.HF_API_KEY;
   try {
-    if (!HF_API_KEY) throw new Error("Missing HF_API_KEY in environment.");
+    const generateEmbedding = await getExtractor();
+    
+    // pooling: 'mean' and normalize: true are standard for semantic search
+    const output = await generateEmbedding(text, { 
+      pooling: 'mean', 
+      normalize: true 
+    });
 
-    const response = await fetch(
-      `https://api-inference.huggingface.co/models/${HF_EMBEDDING_MODEL}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${HF_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          inputs: text,
-          options: { wait_for_model: true }
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`HF Embedding API failed (${response.status}): ${errorData.error || response.statusText}`);
-    }
-
-    const data = await response.json();
-    // Some models return nested arrays (mean pooling vs cls token)
-    if (Array.isArray(data?.[0])) return data[0];
-    return data || [];
+    // Convert Tensor data to a standard Javascript array
+    return Array.from(output.data);
 
   } catch (err) {
-    console.error("❌ HuggingFace Embedding Error:", err.message);
+    console.error("❌ Local Embedding Error:", err.message);
     return [];
   }
 };

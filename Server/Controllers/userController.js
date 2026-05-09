@@ -11,12 +11,16 @@ const registerUser = async (req, res)=> {
         const existing = await userModel.findOne({email})
         if(existing) return res.status(409).json({success: false, message: "Email already registered"})
 
-            const user = await userModel.create({
-                name, email, password: hashedPassword
-            })
-            res.status(201).json({ success: true,  message: "User registered successfully",
-                 user: { id: user._id, name: user.name, email: user.email }
-})
+        const user = await userModel.create({
+            name, email, password: hashedPassword
+        })
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "1d"})
+        res.status(201).json({ 
+            success: true,  
+            message: "User registered successfully",
+            token,
+            user: { id: user._id, name: user.name, email: user.email }
+        })
     } catch (error) {
         console.log(error);
         res.status(500).json({success: false, message: "Registration failed"})
