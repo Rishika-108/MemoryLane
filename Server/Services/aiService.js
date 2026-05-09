@@ -74,9 +74,9 @@ Return ONLY valid JSON in the following format:
 {
   "summary": "Concise but meaningful summary of the content",
   "sentiment": "positive|neutral|negative",
-  "emotion": "primary tone (e.g. Joy, Sadness, Professional, Informative)",
+  "emotion": "Specific emotional tone. Avoid generic 'Professional' or 'Informative'. Instead use descriptive terms like: Curious, Inspiring, Alarming, Humorous, Reflective, Nostalgic, Skeptical, Urgent, or Thought-provoking.",
   "tags": ["relevant-tag1", "relevant-tag2", "relevant-tag3"],
-  "category": "main category",
+  "category": "Broad category (e.g., Technology, Philosophy, Personal Growth, Science)",
   "contentType": "Article|News|Blog|Tweet|Research|Video"
 }
 
