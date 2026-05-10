@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
 
 const socialLinks = [
@@ -9,6 +9,7 @@ const socialLinks = [
 ];
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer className="relative bg-transparent text-gray-300 overflow-hidden border-t border-white/5">
       {/* Subtle Floating Glow */}
@@ -52,12 +53,15 @@ const Footer = () => {
           © {new Date().getFullYear()} <span className="font-semibold text-purple-400/80">MemoryLane</span>
         </span>
         <span className="hidden md:inline text-white/10">|</span>
-        <Link 
-          to="/privacy"
+        <button 
+          onClick={() => {
+            console.log("🚀 Navigating to /privacy...");
+            navigate("/privacy");
+          }}
           className="hover:text-white transition-colors duration-200"
         >
           Privacy Policy
-        </Link>
+        </button>
         <span className="hidden md:inline text-white/10">|</span>
         <span>Built with <span className="text-pink-500 animate-pulse">❤️</span> for digital mindfulness</span>
       </div>

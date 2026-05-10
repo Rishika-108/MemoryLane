@@ -1,7 +1,5 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 
 const Privacy = () => {
   useEffect(() => {
@@ -10,8 +8,6 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-purple-500/30">
-      <Header />
-      
       <main className="container mx-auto px-6 py-24 md:py-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -106,8 +102,6 @@ const Privacy = () => {
           </div>
         </motion.div>
       </main>
-
-      <Footer />
     </div>
   );
 };
