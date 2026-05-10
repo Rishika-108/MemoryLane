@@ -101,16 +101,19 @@
   // --- AUTH BRIDGE ---
   
   function checkAuthBridge() {
-    // If we are on the Memory Lane web app, try to grab the token
-    const isAppDomain = location.hostname === 'localhost' || 
-                        location.hostname === '127.0.0.1' || 
-                        location.hostname.includes('memory-lane');
-                        
-    if (isAppDomain) {
-      console.log('[MemoryLane] App domain detected. Requesting token bridge...');
-      window.postMessage({ type: "REQUEST_TOKEN" }, "*");
-    }
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://memoryvault-9t8p.onrender.com'
+  ];
+
+  const isAppDomain = allowedOrigins.includes(window.location.origin);
+
+  if (isAppDomain) {
+    console.log('[MemoryLane] App domain detected. Requesting token bridge...');
+    window.postMessage({ type: "REQUEST_TOKEN" }, "*");
   }
+}
 
   window.addEventListener("message", (event) => {
     if (event.source !== window) return;
