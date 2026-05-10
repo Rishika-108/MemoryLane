@@ -9,8 +9,9 @@ import { pipeline } from "@xenova/transformers";
 let extractor = null;
 const getExtractor = async () => {
   if (!extractor) {
-    // Using a 768-dimension model to match the existing MongoDB vector index
-    extractor = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    // Using BGE-Base which is much smaller (~100MB) than MPNet, 
+    // fitting within Render's 512MB RAM while still providing 768 dimensions.
+    extractor = await pipeline("feature-extraction", "Xenova/bge-base-en-v1.5");
   }
   return extractor;
 };
@@ -134,19 +135,38 @@ ${text}
  */
 export const generateHFEmbedding = async (text) => {
   try {
-    const generateEmbedding = await getExtractor();
+    // 🟢 Try Local First (Transformers.js)
+    try {
+      const generateEmbedding = await getExtractor();
+      const output = await generateEmbedding(text, { pooling: 'mean', normalize: true });
+      return Array.from(output.data);
+    } catch (localErr) {
+      console.warn("⚠️ Local embedding failed, falling back to HF API:", localErr.message);
+    }
+
+    // 🔵 Fallback to Remote HF API
+    const HF_API_KEY = process.env.HF_API_KEY;
+    const model = "sentence-transformers/all-mpnet-base-v2"; // This is 768 dims on HF API too
     
-    // pooling: 'mean' and normalize: true are standard for semantic search
-    const output = await generateEmbedding(text, { 
-      pooling: 'mean', 
-      normalize: true 
+    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: "POST",
+      headers: { 
+        Authorization: `Bearer ${HF_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
     });
 
-    // Convert Tensor data to a standard Javascript array
-    return Array.from(output.data);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HF API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return Array.isArray(result) ? result : [];
 
   } catch (err) {
-    console.error("❌ Local Embedding Error:", err.message);
+    console.error("❌ All Embedding Methods Failed:", err.message);
     return [];
   }
 };

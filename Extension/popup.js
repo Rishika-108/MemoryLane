@@ -129,8 +129,12 @@ function updateConnectionStatus(token) {
     statusText.style.color = "#4ade80";
   } else {
     statusDot.classList.add('offline');
-    statusText.textContent = "Vault Disconnected (Login required)";
+    statusText.textContent = "Vault Disconnected (Click to Login)";
     statusText.style.color = "#f87171";
+    statusText.style.cursor = "pointer";
+    statusText.onclick = () => {
+      chrome.tabs.create({ url: 'https://memoryvault-9t8p.onrender.com/' });
+    };
   }
 }
 
