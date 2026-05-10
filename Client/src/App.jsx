@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import MemoryLane from "./pages/MemoryLane";
+import Privacy from "./pages/Privacy";
 import AnimatedBackground from "./components/AnimatedBackground";
 import { useAppContext } from "./AppContext";
 import { ToastContainer } from "react-toastify";
@@ -41,8 +42,9 @@ const App = () => {
       <div className="relative z-0 min-h-screen flex flex-col font-sans">
         <Header />
         <Routes>
-          {/* Public Route */}
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/privacy" element={<Privacy />} />
 
           {/* Protected Routes */}
           <Route
