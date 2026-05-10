@@ -17,8 +17,8 @@ const Privacy = () => {
           className="max-w-4xl mx-auto"
         >
           {/* Back Button */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-purple-400 transition-colors mb-12 group"
           >
             <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
@@ -108,7 +108,7 @@ const Privacy = () => {
 
             <div className="pt-10 border-t border-white/10 text-center text-sm text-gray-500">
               <p className="mb-2">For privacy-related questions, please contact us at:</p>
-              <a href="mailto:MemoryLane_support@gmail.com" className="text-purple-400 hover:text-purple-300 font-medium">support@memorylane.app</a>
+              <a href="mailto:MemoryLane_support@gmail.com" className="text-purple-400 hover:text-purple-300 font-medium">MemoryLane_support@gmail.com</a>
             </div>
           </div>
         </motion.div>
