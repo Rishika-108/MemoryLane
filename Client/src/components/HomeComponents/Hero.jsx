@@ -8,12 +8,13 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const { user, setShowLoginModal } = useAppContext(); // assuming you can toggle login modal from context
 
-  // open extension
+  // open extension (now scrolls to help section because chrome-extension:// is blocked)
   const enableExtension = () => {
-  // replace with your extension ID
-  const EXTENSION_ID = "kocmbebpdmdinjbaemilimbeiblhedpg";
-  window.open(`chrome-extension://${EXTENSION_ID}/popup.html`, "_blank");
-};
+    const section = document.getElementById('how-it-works');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const goToPage = () => {
     if (user?.isLoggedIn) {

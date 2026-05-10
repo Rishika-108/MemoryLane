@@ -93,3 +93,7 @@ async function handleLightCapture(payload, tab) {
     chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: 'Network error or server offline' });
   }
 }
+// 🖱 Handle notification clicks
+chrome.notifications.onClicked.addListener(() => {
+  chrome.tabs.create({ url: 'https://memoryvault-9t8p.onrender.com/' });
+});
