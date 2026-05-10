@@ -1,33 +1,9 @@
 import fetch from "node-fetch";
-import { pipeline } from "@xenova/transformers";
+import "dotenv/config";
 
 /**
  * ================================
- * LOCAL EMBEDDINGS CONFIG
- * ================================
- */
-let extractor = null;
-const getExtractor = async () => {
-  if (!extractor) {
-    // Using BGE-Base which is much smaller (~100MB) than MPNet, 
-    // fitting within Render's 512MB RAM while still providing 768 dimensions.
-    extractor = await pipeline("feature-extraction", "Xenova/bge-base-en-v1.5");
-  }
-  return extractor;
-};
-
-/**
- * ================================
- * ENV CONFIG
- * ================================
- */
-
-// GROQ
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-
-/**
- * ================================
- * CLEAN TEXT
+ * CLEAN TEXT FOR AI
  * ================================
  */
 export const cleanTextForAI = (text = "") => {
@@ -60,7 +36,7 @@ const extractJSON = (text = "") => {
 
 /**
  * ================================
- * GROQ AI ANALYSIS
+ * GROQ AI ANALYSIS (Summarization)
  * ================================
  */
 export const generateGroqAIAnalysis = async (text) => {
@@ -92,81 +68,65 @@ ${text}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: "You are a JSON-only AI assistant. Never return markdown.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
+        model: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
-        max_tokens: 500,
-        response_format: { type: "json_object" } // Groq supports forced JSON mode
+        response_format: { type: "json_object" },
       }),
     });
 
-    if (!response.ok) throw new Error(`Groq API failed with status ${response.status}`);
-
     const data = await response.json();
-    const aiText = data?.choices?.[0]?.message?.content || "";
-    return extractJSON(aiText);
+    if (!response.ok) throw new Error(data.error?.message || "Groq API error");
 
+    return extractJSON(data.choices[0]?.message?.content || "{}");
   } catch (err) {
-    console.error("❌ Groq AI Analysis Error:", err.message);
-    return {
-      summary: "",
-      sentiment: "neutral",
-      emotion: "",
-      tags: [],
-      category: "",
-      contentType: "",
-    };
+    console.error("❌ Groq Analysis Error:", err.message);
+    return { summary: "Analysis failed.", tags: [], sentiment: "neutral" };
   }
 };
 
 /**
  * ================================
- * LOCAL TRANSFORMERS EMBEDDINGS
+ * JINA AI EMBEDDINGS
  * ================================
  */
-export const generateHFEmbedding = async (text) => {
+export const generateEmbedding = async (text) => {
   try {
-    // 🟢 Try Local First (Transformers.js)
-    try {
-      const generateEmbedding = await getExtractor();
-      const output = await generateEmbedding(text, { pooling: 'mean', normalize: true });
-      return Array.from(output.data);
-    } catch (localErr) {
-      console.warn("⚠️ Local embedding failed, falling back to HF API:", localErr.message);
+    const JINA_API_KEY = process.env.JINA_API_KEY;
+    if (!JINA_API_KEY) {
+      console.error("❌ Missing JINA_API_KEY in environment.");
+      return [];
     }
 
-    // 🔵 Fallback to Remote HF API
-    const HF_API_KEY = process.env.HF_API_KEY;
-    const model = "sentence-transformers/all-mpnet-base-v2"; // This is 768 dims on HF API too
-    
-    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    const response = await fetch("https://api.jina.ai/v1/embeddings", {
       method: "POST",
-      headers: { 
-        Authorization: `Bearer ${HF_API_KEY}`,
-        "Content-Type": "application/json"
+      headers: {
+        Authorization: `Bearer ${JINA_API_KEY}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
+      body: JSON.stringify({
+        model: "jina-embeddings-v2-base-en",
+        input: [text],
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HF API error: ${response.status}`);
+      console.warn("⚠️ Jina Embedding API Error:", errorData.error?.message || response.status);
+      return [];
     }
 
     const result = await response.json();
-    return Array.isArray(result) ? result : [];
+
+    // Jina returns { "data": [ { "embedding": [...] } ] }
+    if (result.data && result.data[0] && result.data[0].embedding) {
+      return result.data[0].embedding;
+    }
+
+    return [];
 
   } catch (err) {
-    console.error("❌ All Embedding Methods Failed:", err.message);
+    console.error("❌ Jina Embedding Failed:", err.message);
     return [];
   }
 };

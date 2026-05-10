@@ -5,12 +5,12 @@ const CAPTURE_INTERVAL_MS = 30_000;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("📩 Received message in background:", message);
-  
+
   if (message?.type === 'capture_light') {
     handleLightCapture(message.payload, sender.tab).catch(console.error);
   } else if (message?.type === 'SET_SESSION') {
-    chrome.storage.local.set({ 
-      token: message.token, 
+    chrome.storage.local.set({
+      token: message.token,
       userId: message.userId || null,
       lastSync: new Date().toISOString()
     }, () => {
@@ -75,11 +75,11 @@ async function handleLightCapture(payload, tab) {
     console.log("✅ Backend response:", result);
 
     if (response.ok && result?.ok) {
-       console.log("✨ Capture successful!");
-       chrome.runtime.sendMessage({ type: 'local_capture_saved', payload: result });
+      console.log("✨ Capture successful!");
+      chrome.runtime.sendMessage({ type: 'local_capture_saved', payload: result });
     } else {
-       console.warn("⚠️ Capture failed:", result);
-       chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: result.message || 'Server error' });
+      console.warn("⚠️ Capture failed:", result);
+      chrome.runtime.sendMessage({ type: 'CAPTURE_FAILED', error: result.message || 'Server error' });
     }
 
   } catch (e) {
