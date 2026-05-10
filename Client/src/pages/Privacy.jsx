@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 
 const Privacy = () => {
   useEffect(() => {
@@ -7,21 +9,30 @@ const Privacy = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-purple-500/30">
-      <main className="container mx-auto px-6 py-24 md:py-32">
-        <motion.div 
+    <div className="min-h-screen bg-slate-950 text-white selection:bg-purple-500/30 font-sans">
+      <main className="container mx-auto px-6 py-12 md:py-24">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          {/* Back Button */}
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-purple-400 transition-colors mb-12 group"
+          >
+            <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+
+          <div className="mb-12 text-left">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Privacy Policy
             </h1>
             <p className="text-gray-400">Effective Date: May 10, 2026</p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 md:p-12 space-y-10 text-gray-300 leading-relaxed backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 md:p-12 space-y-12 text-gray-300 leading-relaxed backdrop-blur-sm">
             <section>
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
                 <span className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">01</span>
@@ -89,15 +100,15 @@ const Privacy = () => {
                 Security & Data Use
               </h2>
               <p>
-                Memory Lane does not sell your activity for advertising. Collected information is used solely to generate AI-powered summaries, 
-                enable semantic search, and organize your digital memories. We use reasonable technical safeguards including secure transmission 
+                Memory Lane does not sell your activity for advertising. Collected information is used solely to generate AI-powered summaries,
+                enable semantic search, and organize your digital memories. We use reasonable technical safeguards including secure transmission
                 and protected backend infrastructure.
               </p>
             </section>
 
             <div className="pt-10 border-t border-white/10 text-center text-sm text-gray-500">
-              <p>For privacy-related questions, please contact us at:</p>
-              <a href="mailto:support@memorylane.app" className="text-purple-400 hover:text-purple-300 font-medium">support@memorylane.app</a>
+              <p className="mb-2">For privacy-related questions, please contact us at:</p>
+              <a href="mailto:MemoryLane_support@gmail.com" className="text-purple-400 hover:text-purple-300 font-medium">support@memorylane.app</a>
             </div>
           </div>
         </motion.div>
