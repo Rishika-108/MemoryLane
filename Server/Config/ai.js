@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import CapturedContent from "../Models/contentModel.js";
 import {
   generateGroqAIAnalysis,
-  generateHFEmbedding,
+  generateEmbedding,
   cleanTextForAI,
 } from "../Services/aiService.js";
 
@@ -12,7 +12,7 @@ let aiQueue = Promise.resolve();
 /**
  * Orchestrates the full AI pipeline for a piece of content:
  * 1. Groq (Llama 3.1) for Summarization and Analysis
- * 2. Hugging Face (BGE-Small) for Vector Search Embeddings
+ * 2. Jina AI (v2-base) for Vector Search Embeddings
  */
 export const generateAIForContent = async (id, userId) => {
   return (aiQueue = aiQueue
@@ -59,7 +59,7 @@ export const generateAIForContent = async (id, userId) => {
           Emotion: ${aiResult.emotion || ""}
           Tags: ${(aiResult.tags || []).join(", ")}
         `.trim();
-        content.embedding = await generateHFEmbedding(embeddingText);
+        content.embedding = await generateEmbedding(embeddingText);
 
         content.status = "processed";
         await content.save();

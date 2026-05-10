@@ -1,5 +1,5 @@
 import CapturedContent from "../Models/contentModel.js";
-import { generateHFEmbedding } from "../Services/aiService.js";
+import { generateEmbedding } from "../Services/aiService.js";
 import mongoose from "mongoose";
 
 export const searchContent = async (req, res) => {
@@ -13,7 +13,7 @@ export const searchContent = async (req, res) => {
 
     if (isSemantic || isEmotionSearch) {
       const actualQuery = isSemantic ? semanticQuery.trim() : `Emotion: ${mood.trim()}`;
-      const queryEmbedding = await generateHFEmbedding(actualQuery);
+      const queryEmbedding = await generateEmbedding(actualQuery);
 
       if (!queryEmbedding || queryEmbedding.length === 0) {
         return res.status(200).json({ count: 0, data: [], message: "Could not generate AI embedding for search." });
@@ -48,7 +48,7 @@ export const searchContent = async (req, res) => {
       const matchFilter = { userId: new mongoose.Types.ObjectId(userId) };
 
       if (tag && tag.trim() !== "") matchFilter["aiData.tags"] = { $in: [tag.trim()] };
-      
+
       // If it's a semantic search but NOT explicitly an emotion search, 
       // we can still apply the mood filter if the user provided one in addition to the semantic query.
       if (!isEmotionSearch && mood && mood.trim() !== "") {
