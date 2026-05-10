@@ -1,0 +1,263 @@
+
+<body>
+
+<div class="container">
+
+<div class="badge">
+Memory Lane Privacy & Data Protection
+</div>
+
+<h1>Privacy Policy</h1>
+
+<p class="subtitle">
+Effective Date: May 10, 2026<br/>
+Applicable to the Memory Lane browser extension and web platform.
+</p>
+
+<div class="section">
+<h2>Introduction</h2>
+
+<p>
+Memory Lane ("we", "our", or "us") is a personal knowledge and memory
+assistant designed to help users save, organize, summarize, and retrieve
+meaningful web content.
+</p>
+
+<p>
+This Privacy Policy explains what information is collected,
+how it is processed, and how users maintain control over
+their information when using Memory Lane.
+</p>
+
+<div class="highlight">
+Memory Lane only operates after user authentication and
+when explicitly enabled by the user.
+</div>
+</div>
+
+<div class="section">
+<h2>Information We Collect</h2>
+
+<p>
+When users manually save content or enable Auto Capture,
+Memory Lane may collect:
+</p>
+
+<ul>
+<li>Webpage URL</li>
+<li>Page title</li>
+<li>Relevant webpage text content used for summarization</li>
+<li>User-selected text (when applicable)</li>
+<li>YouTube metadata including video title, URL, and channel name</li>
+<li>PDF text content intentionally captured by the user</li>
+<li>Timestamps related to captures</li>
+<li>Engagement signals such as time spent and scroll depth</li>
+<li>Authentication tokens required to connect the extension to a Memory Lane account</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Manual Capture</h2>
+
+<p>
+Users may manually save content using the Memory Lane browser extension.
+When manually triggered, Memory Lane may extract relevant webpage or document content in order to generate AI-powered summaries and memory organization.
+</p>
+</div>
+
+<div class="section">
+<h2>Auto Capture</h2>
+
+<p>
+Auto Capture is optional and disabled by default.
+Users may enable it after signing into their Memory Lane account.
+</p>
+
+<p>
+Memory Lane only performs automatic capture after meaningful engagement thresholds are met, including:
+</p>
+
+<ul>
+<li>Minimum time spent on page (approximately 15 seconds)</li>
+<li>Minimum scroll engagement (approximately 20%)</li>
+<li>Minimum content threshold (approximately 200+ characters of readable content)</li>
+</ul>
+
+<div class="highlight">
+Memory Lane does not automatically capture every webpage indiscriminately.
+Capture occurs only after engagement thresholds are met.
+</div>
+</div>
+
+<div class="section">
+<h2>Excluded Content</h2>
+
+<p>
+For privacy and safety reasons, Memory Lane excludes certain categories of content from capture.
+</p>
+
+<ul>
+<li>Banking and financial websites</li>
+<li>Password and login fields</li>
+<li>Email inboxes</li>
+<li>Private messaging and social media direct messages</li>
+<li>Private or restricted account areas</li>
+<li>Incognito/private browsing sessions</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>How Information Is Used</h2>
+
+<p>
+Collected information may be used to:
+</p>
+
+<ul>
+<li>Generate AI-powered summaries and insights</li>
+<li>Save and organize memories</li>
+<li>Enable semantic search and retrieval</li>
+<li>Improve learning retention and productivity features</li>
+<li>Synchronize captures across devices and user sessions</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>AI Processing</h2>
+
+<p>
+To provide summarization and memory organization features,
+relevant webpage or document text may be securely transmitted
+to Memory Lane backend services for AI-powered processing.
+</p>
+
+<p>
+This processing may include summarization, categorization,
+embedding generation, and retrieval optimization.
+</p>
+</div>
+
+<div class="section">
+<h2>Data Storage</h2>
+
+<p>
+Memory Lane may store information both locally in the user's browser
+and securely on backend systems associated with the user's account.
+</p>
+
+<p>
+Stored information may include summaries, metadata,
+captured content, and memory organization data.
+</p>
+</div>
+
+<div class="section">
+<h2>Permissions</h2>
+
+<p>
+The Memory Lane extension may request browser permissions required for core functionality, including:
+</p>
+
+<ul>
+<li>tabs and activeTab — to identify pages selected by the user</li>
+<li>scripting — to extract content for saving and summarization</li>
+<li>storage — to maintain login sessions and preferences</li>
+<li>host permissions — to process supported webpages selected or meaningfully engaged with by users</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Third-Party Services</h2>
+
+<p>
+Memory Lane may use trusted cloud, database,
+authentication, hosting, and AI service providers
+required to deliver core platform functionality.
+</p>
+</div>
+
+<div class="section">
+<h2>User Control</h2>
+
+<p>
+Users may:
+</p>
+
+<ul>
+<li>Enable or disable Auto Capture</li>
+<li>Disconnect the extension by logging out</li>
+<li>Disable the extension at any time</li>
+</ul>
+
+<p>
+Memory Lane functionality requires account authentication.
+Without login, capture features remain unavailable.
+</p>
+</div>
+
+<div class="section">
+<h2>Analytics</h2>
+
+<p>
+Memory Lane does not sell browsing activity or user data for advertising purposes.
+We do not use captured content for behavioral advertising.
+</p>
+</div>
+
+<div class="section">
+<h2>Security</h2>
+
+<p>
+Reasonable technical and organizational safeguards are implemented
+to protect user information, including secure transmission practices,
+access control systems, and protected backend infrastructure.
+</p>
+
+<p>
+However, no internet transmission or storage method can be guaranteed
+to be fully secure.
+</p>
+</div>
+
+<div class="section">
+<h2>Children's Privacy</h2>
+
+<p>
+Memory Lane is not intended for children under 13 years of age.
+</p>
+</div>
+
+<div class="section">
+<h2>Changes to This Policy</h2>
+
+<p>
+We may update this Privacy Policy periodically to reflect changes
+in technology, legal obligations, or platform functionality.
+</p>
+
+<p>
+Continued use of Memory Lane after updates constitutes acceptance
+of the revised policy.
+</p>
+</div>
+
+<div class="section">
+<h2>Contact</h2>
+
+<p>
+For privacy-related questions or concerns, contact:
+</p>
+
+<p>
+<a href="mailto:support@memorylane.app">
+support@memorylane.app
+</a>
+</p>
+</div>
+
+<div class="footer">
+© 2026 Memory Lane. All rights reserved.
+</div>
+
+</div>
+</body>
